@@ -1,6 +1,7 @@
 'use client';
 import { createClient } from '@supabase/supabase-js';
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -80,9 +81,9 @@ export default function Home() {
                         </span>
                       </td>
                       <td className="p-4">
-                        <button className="text-sm font-semibold text-blue-600 hover:text-blue-800 transition-colors">
+                        <Link href={`/battery/${part.id}`} className="text-sm font-semibold text-blue-600 hover:text-blue-800 transition-colors">
                           View Details &rarr;
-                        </button>
+                        </Link>
                       </td>
                     </tr>
                   ))}
