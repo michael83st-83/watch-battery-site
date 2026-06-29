@@ -1,8 +1,13 @@
 import { createClient } from '@supabase/supabase-js';
 
+// Initialize the client using your environment variables
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
+
 export default async function BatteryPage({ params }: { params: { id: string } }) {
   const { id } = await params;
-  const supabase = await createClient();
 
   const { data: battery, error } = await supabase
     .from('parts')
