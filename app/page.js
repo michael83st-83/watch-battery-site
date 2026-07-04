@@ -79,7 +79,7 @@ export default function Home() {
                     <tr key={part.id} className="hover:bg-gray-50 transition-colors">
                       <td className="p-4 font-medium text-gray-900">{part.part_name || 'Unnamed Part'}</td>
                       {/* UPDATED: Added Brand Data Cell */}
-                      <td className="p-4 text-sm text-gray-700">{part.brands?.name || '-'}</td>
+                      <td className="p-4 text-sm text-gray-700">{part.brands?.name || 'Generic'}</td>
                       <td className="p-4">
                         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-800 border border-blue-100">
                           {part.part_type || 'Unknown'}
