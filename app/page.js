@@ -15,9 +15,10 @@ export default function Home() {
 
   useEffect(() => {
     async function fetchData() {
+      // UPDATED: Added brands(name) to fetch the brand relationship
       const { data, error } = await supabase
         .from('parts')
-        .select('*');
+        .select('*, brands(name)');
       
       if (!error && data) {
         setParts(data);
@@ -67,6 +68,8 @@ export default function Home() {
                 <thead>
                   <tr className="bg-gray-100 text-gray-600 uppercase text-xs tracking-wider border-b border-gray-200">
                     <th className="p-4 font-semibold">Part Name</th>
+                    {/* UPDATED: Added Brand Header */}
+                    <th className="p-4 font-semibold">Brand</th>
                     <th className="p-4 font-semibold">Part Type</th>
                     <th className="p-4 font-semibold">Actions</th>
                   </tr>
@@ -75,6 +78,8 @@ export default function Home() {
                   {filteredParts.map((part) => (
                     <tr key={part.id} className="hover:bg-gray-50 transition-colors">
                       <td className="p-4 font-medium text-gray-900">{part.part_name || 'Unnamed Part'}</td>
+                      {/* UPDATED: Added Brand Data Cell */}
+                      <td className="p-4 text-sm text-gray-700">{part.brands?.name || '-'}</td>
                       <td className="p-4">
                         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-800 border border-blue-100">
                           {part.part_type || 'Unknown'}

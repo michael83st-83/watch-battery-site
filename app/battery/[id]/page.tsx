@@ -8,9 +8,10 @@ const supabase = createClient(
 export default async function BatteryPage({ params }: { params: { id: string } }) {
   const { id } = await params;
 
+  // UPDATED: Added brands(name) to the select query to fetch the joined data
   const { data: battery, error } = await supabase
     .from('parts')
-    .select('*')
+    .select('*, brands(name)')
     .eq('id', id)
     .single();
 
@@ -49,7 +50,8 @@ export default async function BatteryPage({ params }: { params: { id: string } }
               <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-8">
                 <div>
                   <dt className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Brand</dt>
-                  <dd className="mt-1 text-lg font-medium text-gray-900">{battery.brand || 'N/A'}</dd>
+                  {/* UPDATED: Changed from battery.brand to battery.brands?.name */}
+                  <dd className="mt-1 text-lg font-medium text-gray-900">{battery.brands?.name || 'N/A'}</dd>
                 </div>
                 <div>
                   <dt className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Voltage</dt>
