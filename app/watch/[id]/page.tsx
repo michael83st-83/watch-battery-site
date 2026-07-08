@@ -30,7 +30,7 @@ export default async function WatchPage({ params }: { params: { id: string } }) 
     );
   }
 
-  // Extract the compatible battery (assuming 1 primary battery per watch for now)
+  // Extract the compatible battery
   const compatiblePart = watch.compatibility?.[0]?.parts;
   
   // Affiliate Links
@@ -55,6 +55,21 @@ export default async function WatchPage({ params }: { params: { id: string } }) 
           
           {/* Content Section */}
           <div className="p-8">
+            
+            {/* NEW: Watch Image Section */}
+            {watch.image_path && (
+              <div className="mb-10 flex justify-center">
+                <div className="relative w-full max-w-[300px] aspect-square rounded-2xl overflow-hidden border border-gray-100 bg-white p-6 shadow-sm flex items-center justify-center">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img 
+                    src={watch.image_path} 
+                    alt={`${watch.brands?.name || 'Watch'} ${watch.model_name || ''}`}
+                    className="object-contain w-full h-full hover:scale-105 transition-transform duration-300"
+                  />
+                </div>
+              </div>
+            )}
+
             <h2 className="text-2xl font-bold text-gray-900 mb-6 border-b pb-2">Required Battery</h2>
             
             {compatiblePart ? (
