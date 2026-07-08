@@ -8,10 +8,19 @@ const supabase = createClient(
 export default async function BatteryPage({ params }: { params: { id: string } }) {
   const { id } = await params;
 
-  // Fetching the part data and the joined brand name
+  // UPDATED: Added compatibility and watches to the query to fetch the relationship
   const { data: battery, error } = await supabase
     .from('parts')
-    .select('*, brands(name)')
+    .select(`
+      *,
+      brands(name),
+      compatibility(
+        watches(
+          model_name,
+          model_number
+        )
+      )
+    `)
     .eq('id', id)
     .single();
 
@@ -43,7 +52,7 @@ export default async function BatteryPage({ params }: { params: { id: string } }
             </div>
           </div>
           
-          {/* Content Section - UPDATED: Added Grid Layout for Image Support */}
+          {/* Content Section */}
           <div className="p-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-8">
               
@@ -70,7 +79,7 @@ export default async function BatteryPage({ params }: { params: { id: string } }
                 </dl>
               </div>
 
-              {/* Image Column - Conditionally renders if an image exists */}
+              {/* Image Column */}
               {battery.image_path && (
                 <div className="flex items-center justify-center">
                   <div className="relative w-full max-w-[250px] aspect-square rounded-xl overflow-hidden border border-gray-100 bg-white p-4 shadow-sm flex items-center justify-center">
@@ -83,11 +92,27 @@ export default async function BatteryPage({ params }: { params: { id: string } }
                   </div>
                 </div>
               )}
-
             </div>
 
+            {/* NEW: Compatible Watches Section */}
+            {battery.compatibility && battery.compatibility.length > 0 && (
+              <div className="mt-8 pt-8 border-t border-gray-100">
+                <h2 className="text-2xl font-bold text-gray-900 mb-6">Compatible Watches</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                  {battery.compatibility.map((comp, index) => (
+                    <div key={index} className="bg-gray-50 p-4 rounded-xl border border-gray-200 flex flex-col justify-center">
+                      <span className="font-bold text-gray-900">{comp.watches?.model_name || 'Generic'}</span>
+                      {comp.watches?.model_number && comp.watches.model_number !== 'N/A' && (
+                        <span className="text-sm text-gray-500 mt-1">{comp.watches.model_number}</span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Affiliate CTA Section */}
-            <div className="bg-gray-50 rounded-xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4 border border-gray-100 mt-8">
+            <div className="bg-gray-50 rounded-xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4 border border-gray-100 mt-12">
               <div>
                 <h3 className="text-xl font-bold text-gray-900">Need a replacement?</h3>
                 <p className="text-gray-600 mt-1">Get fast shipping and the best price.</p>
@@ -101,8 +126,8 @@ export default async function BatteryPage({ params }: { params: { id: string } }
                 Buy on Amazon
               </a>
             </div>
+            
           </div>
-
         </div>
       </div>
     </div>
