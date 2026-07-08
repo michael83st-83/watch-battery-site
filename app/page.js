@@ -15,10 +15,16 @@ export default function Home() {
 
   useEffect(() => {
     async function fetchData() {
-      // UPDATED: Added brands(name) to fetch the brand relationship
+      // UPDATED: Added compatibility and watches to the select query
       const { data, error } = await supabase
         .from('parts')
-        .select('*, brands(name)');
+        .select(`
+          *,
+          brands(name),
+          compatibility(
+            watches(model_name, model_number)
+          )
+        `);
       
       if (!error && data) {
         setParts(data);
@@ -28,10 +34,20 @@ export default function Home() {
     fetchData();
   }, []);
 
-  const filteredParts = parts.filter(part => 
-    part.part_name?.toLowerCase().includes(search.toLowerCase()) ||
-    part.part_type?.toLowerCase().includes(search.toLowerCase())
-  );
+  // UPDATED: Search logic now checks both part names AND associated watch models
+  const filteredParts = parts.filter(part => {
+    const searchTerm = search.toLowerCase();
+    
+    const matchesPart = part.part_name?.toLowerCase().includes(searchTerm) ||
+                        part.part_type?.toLowerCase().includes(searchTerm);
+    
+    const matchesWatch = part.compatibility?.some(comp => 
+      comp.watches?.model_name?.toLowerCase().includes(searchTerm) ||
+      comp.watches?.model_number?.toLowerCase().includes(searchTerm)
+    );
+
+    return matchesPart || matchesWatch;
+  });
 
   return (
     <main className="min-h-screen bg-gray-50 text-gray-900 font-sans">
@@ -49,7 +65,8 @@ export default function Home() {
         <div className="mb-8">
           <input
             type="text"
-            placeholder="Search by battery name or type (e.g., CR2032)..."
+            /* UPDATED: Placeholder text to reflect new search capabilities */
+            placeholder="Search by watch model or battery type (e.g., Casio F-91W, CR2032)..."
             className="w-full p-4 border border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -68,7 +85,6 @@ export default function Home() {
                 <thead>
                   <tr className="bg-gray-100 text-gray-600 uppercase text-xs tracking-wider border-b border-gray-200">
                     <th className="p-4 font-semibold">Part Name</th>
-                    {/* UPDATED: Added Brand Header */}
                     <th className="p-4 font-semibold">Brand</th>
                     <th className="p-4 font-semibold">Part Type</th>
                     <th className="p-4 font-semibold">Actions</th>
@@ -78,7 +94,6 @@ export default function Home() {
                   {filteredParts.map((part) => (
                     <tr key={part.id} className="hover:bg-gray-50 transition-colors">
                       <td className="p-4 font-medium text-gray-900">{part.part_name || 'Unnamed Part'}</td>
-                      {/* UPDATED: Added Brand Data Cell */}
                       <td className="p-4 text-sm text-gray-700">{part.brands?.name || 'Generic'}</td>
                       <td className="p-4">
                         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-800 border border-blue-100">
