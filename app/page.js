@@ -15,7 +15,6 @@ export default function Home() {
 
   useEffect(() => {
     async function fetchData() {
-      // UPDATED: Added compatibility and watches to the select query
       const { data, error } = await supabase
         .from('parts')
         .select(`
@@ -34,16 +33,21 @@ export default function Home() {
     fetchData();
   }, []);
 
-  // UPDATED: Search logic now checks both part names AND associated watch models
+  // NEW: Normalizer function to strip spaces, hyphens, and casing for fuzzy matching
+  const normalize = (str) => (str || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+
   const filteredParts = parts.filter(part => {
-    const searchTerm = search.toLowerCase();
+    const normalizedSearch = normalize(search);
     
-    const matchesPart = part.part_name?.toLowerCase().includes(searchTerm) ||
-                        part.part_type?.toLowerCase().includes(searchTerm);
+    // If the search bar is empty, show everything
+    if (!normalizedSearch) return true;
+    
+    const matchesPart = normalize(part.part_name).includes(normalizedSearch) ||
+                        normalize(part.part_type).includes(normalizedSearch);
     
     const matchesWatch = part.compatibility?.some(comp => 
-      comp.watches?.model_name?.toLowerCase().includes(searchTerm) ||
-      comp.watches?.model_number?.toLowerCase().includes(searchTerm)
+      normalize(comp.watches?.model_name).includes(normalizedSearch) ||
+      normalize(comp.watches?.model_number).includes(normalizedSearch)
     );
 
     return matchesPart || matchesWatch;
@@ -65,7 +69,6 @@ export default function Home() {
         <div className="mb-8">
           <input
             type="text"
-            /* UPDATED: Placeholder text to reflect new search capabilities */
             placeholder="Search by watch model or battery type (e.g., Casio F-91W, CR2032)..."
             className="w-full p-4 border border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
             value={search}
