@@ -8,7 +8,7 @@ const supabase = createClient(
 export default async function BatteryPage({ params }: { params: { id: string } }) {
   const { id } = await params;
 
-  // UPDATED: Added brands(name) to the select query to fetch the joined data
+  // Fetching the part data and the joined brand name
   const { data: battery, error } = await supabase
     .from('parts')
     .select('*, brands(name)')
@@ -23,12 +23,12 @@ export default async function BatteryPage({ params }: { params: { id: string } }
     );
   }
 
-  // Fallback link generation: Ensures a working affiliate link even before n8n populates specific URLs
+  // Fallback link generation
   const amazonLink = battery.amazon_affiliate_link || `https://www.amazon.com/s?k=${encodeURIComponent(battery.part_name)}+watch+battery&tag=YOUR_TAG_HERE-20`;
 
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-3xl mx-auto">
+      <div className="max-w-4xl mx-auto">
         <div className="bg-white shadow-xl rounded-2xl overflow-hidden border border-gray-100">
           
           {/* Header Section */}
@@ -43,29 +43,47 @@ export default async function BatteryPage({ params }: { params: { id: string } }
             </div>
           </div>
           
-          {/* Content Section */}
+          {/* Content Section - UPDATED: Added Grid Layout for Image Support */}
           <div className="p-8">
-            <div className="mb-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6 border-b pb-2">Specifications</h2>
-              <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-8">
-                <div>
-                  <dt className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Brand</dt>
-                  {/* UPDATED: Changed from battery.brand to battery.brands?.name */}
-                  <dd className="mt-1 text-lg font-medium text-gray-900">{battery.brands?.name || 'N/A'}</dd>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-8">
+              
+              {/* Specs Column */}
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900 mb-6 border-b pb-2">Specifications</h2>
+                <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-8">
+                  <div>
+                    <dt className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Brand</dt>
+                    <dd className="mt-1 text-lg font-medium text-gray-900">{battery.brands?.name || 'N/A'}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Voltage</dt>
+                    <dd className="mt-1 text-lg font-medium text-gray-900">{battery.voltage || 'N/A'}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Diameter</dt>
+                    <dd className="mt-1 text-lg font-medium text-gray-900">{battery.diameter || 'N/A'}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Thickness</dt>
+                    <dd className="mt-1 text-lg font-medium text-gray-900">{battery.thickness || 'N/A'}</dd>
+                  </div>
+                </dl>
+              </div>
+
+              {/* Image Column - Conditionally renders if an image exists */}
+              {battery.image_path && (
+                <div className="flex items-center justify-center">
+                  <div className="relative w-full max-w-[250px] aspect-square rounded-xl overflow-hidden border border-gray-100 bg-white p-4 shadow-sm flex items-center justify-center">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img 
+                      src={battery.image_path} 
+                      alt={battery.part_name}
+                      className="object-contain w-full h-full"
+                    />
+                  </div>
                 </div>
-                <div>
-                  <dt className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Voltage</dt>
-                  <dd className="mt-1 text-lg font-medium text-gray-900">{battery.voltage || 'N/A'}</dd>
-                </div>
-                <div>
-                  <dt className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Diameter</dt>
-                  <dd className="mt-1 text-lg font-medium text-gray-900">{battery.diameter || 'N/A'}</dd>
-                </div>
-                <div>
-                  <dt className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Thickness</dt>
-                  <dd className="mt-1 text-lg font-medium text-gray-900">{battery.thickness || 'N/A'}</dd>
-                </div>
-              </dl>
+              )}
+
             </div>
 
             {/* Affiliate CTA Section */}
