@@ -19,7 +19,11 @@ export default function Home() {
       // NEW: Fetch both parts AND watches simultaneously
       const [partsResponse, watchesResponse] = await Promise.all([
         supabase.from('parts').select('*, brands(name)'),
-        supabase.from('watches').select('*, brands(name)')
+        supabase
+          .from('watches')
+          .select('*, brands(name)')
+          .not('model_number', 'is', null)
+          .not('model_number', 'in', '("Pending", "Unknown", "Not Listed", "Watch", "N/A", "Generic/Compatible")')
       ]);
       
       if (partsResponse.data) setParts(partsResponse.data);
