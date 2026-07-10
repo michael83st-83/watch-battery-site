@@ -1,135 +1,104 @@
+'use client';
 import { createClient } from '@supabase/supabase-js';
+import { useState, useEffect } from 'react';
+import { useParams } from 'next/navigation';
+import Link from 'next/link';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
-export default async function BatteryPage({ params }: { params: { id: string } }) {
-  const { id } = await params;
+export default function BatteryPage() {
+  const params = useParams();
+  const [part, setPart] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-  // UPDATED: Added compatibility and watches to the query to fetch the relationship
-  const { data: battery, error } = await supabase
-    .from('parts')
-    .select(`
-      *,
-      brands(name),
-      compatibility(
-        watches(
-          model_name,
-          model_number
-        )
-      )
-    `)
-    .eq('id', id)
-    .single();
+  // Toolkit placeholder image
+  const TOOLKIT_IMAGE_URL = "https://images.unsplash.com/photo-1584281721531-90a6e09fb584?q=80&w=400&auto=format&fit=crop";
 
-  if (error || !battery) {
-    return (
-      <div className="max-w-3xl mx-auto p-12 text-center">
-        <h1 className="text-2xl font-bold text-gray-900">Battery not found.</h1>
-      </div>
-    );
-  }
+  useEffect(() => {
+    async function fetchData() {
+      if (!params?.id) return;
+      const { data, error } = await supabase
+        .from('parts')
+        .select('*, brands(name)')
+        .eq('id', params.id)
+        .single();
+      if (data) setPart(data);
+      setLoading(false);
+    }
+    fetchData();
+  }, [params]);
 
-  // Fallback link generation
-  const amazonLink = battery.amazon_affiliate_link || `https://www.amazon.com/s?k=${encodeURIComponent(battery.part_name)}+watch+battery&tag=YOUR_TAG_HERE-20`;
+  if (loading) return <div className="p-12 text-center text-gray-500 font-medium">Loading battery details...</div>;
+  if (!part) return <div className="p-12 text-center text-gray-500 font-medium">Battery not found in database.</div>;
+
+  const batteryAmazonLink = `https://www.amazon.com/s?k=${encodeURIComponent(part.part_name || 'watch battery')}+replacement`;
+  const toolKitAmazonLink = `https://www.amazon.com/s?k=watch+back+removal+tool+kit`;
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl mx-auto">
-        <div className="bg-white shadow-xl rounded-2xl overflow-hidden border border-gray-100">
+    <main className="min-h-screen bg-gray-50 pb-12">
+      <header className="bg-gradient-to-r from-blue-700 to-indigo-800 text-white p-6 shadow-md">
+        <div className="max-w-5xl mx-auto">
+          <Link href="/" className="text-indigo-200 text-sm hover:text-white mb-2 inline-block font-medium">&larr; Back to Search</Link>
+          <h1 className="text-3xl font-extrabold mt-1">{part.part_name} Replacement Battery</h1>
+          <p className="text-indigo-100 text-lg">Type: {part.part_type || 'N/A'}</p>
+        </div>
+      </header>
+
+      <div className="max-w-5xl mx-auto p-4 md:p-6 mt-4 grid grid-cols-1 lg:grid-cols-2 gap-8">
+        
+        {/* LEFT COLUMN: Visuals */}
+        <div className="flex gap-4 h-48 md:h-64">
+           {/* Battery Image */}
+           <div className="flex-1 bg-white border border-gray-200 rounded-xl p-4 flex items-center justify-center shadow-sm">
+             {part.image_path ? (
+                <img src={part.image_path} alt="Battery" className="max-h-full object-contain" />
+             ) : (
+                <span className="text-xs font-medium text-gray-400 text-center">Battery Image<br/>Pending</span>
+             )}
+           </div>
+           
+           {/* Dedicated Tool Kit Image Slot */}
+           <div className="flex-1 bg-white border border-gray-200 rounded-xl flex items-center justify-center shadow-sm overflow-hidden">
+              <img src={TOOLKIT_IMAGE_URL} alt="Watch Repair Tool Kit" className="w-full h-full object-cover opacity-90" />
+           </div>
+        </div>
+
+        {/* RIGHT COLUMN: Buttons and Details */}
+        <div className="flex flex-col gap-4">
+          <a href={batteryAmazonLink} target="_blank" rel="noopener noreferrer" className="block w-full bg-[#FF9900] hover:bg-[#E48A00] text-gray-900 text-center font-bold py-4 rounded-xl shadow-sm transition-colors text-lg">
+            Buy Battery on Amazon
+          </a>
+          <a href={toolKitAmazonLink} target="_blank" rel="noopener noreferrer" className="block w-full bg-gray-900 hover:bg-black text-white text-center font-bold py-4 rounded-xl shadow-sm transition-colors text-lg">
+            Get Watch Repair Tool Kit
+          </a>
           
-          {/* Header Section */}
-          <div className="bg-blue-600 p-8 text-white">
-            <h1 className="text-4xl font-extrabold tracking-tight mb-2">
-              {battery.part_name}
-            </h1>
-            <div className="flex items-center gap-2 mt-4">
-              <span className="px-4 py-1.5 bg-white/20 text-white text-sm font-semibold rounded-full backdrop-blur-sm">
-                {battery.part_type || 'Unknown Type'}
-              </span>
-            </div>
-          </div>
-          
-          {/* Content Section */}
-          <div className="p-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-8">
-              
-              {/* Specs Column */}
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-6 border-b pb-2">Specifications</h2>
-                <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-8">
-                  <div>
-                    <dt className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Brand</dt>
-                    <dd className="mt-1 text-lg font-medium text-gray-900">{battery.brands?.name || 'N/A'}</dd>
-                  </div>
-                  <div>
-                    <dt className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Voltage</dt>
-                    <dd className="mt-1 text-lg font-medium text-gray-900">{battery.voltage || 'N/A'}</dd>
-                  </div>
-                  <div>
-                    <dt className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Diameter</dt>
-                    <dd className="mt-1 text-lg font-medium text-gray-900">{battery.diameter || 'N/A'}</dd>
-                  </div>
-                  <div>
-                    <dt className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Thickness</dt>
-                    <dd className="mt-1 text-lg font-medium text-gray-900">{battery.thickness || 'N/A'}</dd>
-                  </div>
-                </dl>
-              </div>
-
-              {/* Image Column */}
-              {battery.image_path && (
-                <div className="flex items-center justify-center">
-                  <div className="relative w-full max-w-[250px] aspect-square rounded-xl overflow-hidden border border-gray-100 bg-white p-4 shadow-sm flex items-center justify-center">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img 
-                      src={battery.image_path} 
-                      alt={battery.part_name}
-                      className="object-contain w-full h-full"
-                    />
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* NEW: Compatible Watches Section */}
-            {battery.compatibility && battery.compatibility.length > 0 && (
-              <div className="mt-8 pt-8 border-t border-gray-100">
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">Compatible Watches</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                  {battery.compatibility.map((comp, index) => (
-                    <div key={index} className="bg-gray-50 p-4 rounded-xl border border-gray-200 flex flex-col justify-center">
-                      <span className="font-bold text-gray-900">{comp.watches?.model_name || 'Generic'}</span>
-                      {comp.watches?.model_number && comp.watches.model_number !== 'N/A' && (
-                        <span className="text-sm text-gray-500 mt-1">{comp.watches.model_number}</span>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Affiliate CTA Section */}
-            <div className="bg-gray-50 rounded-xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4 border border-gray-100 mt-12">
-              <div>
-                <h3 className="text-xl font-bold text-gray-900">Need a replacement?</h3>
-                <p className="text-gray-600 mt-1">Get fast shipping and the best price.</p>
-              </div>
-              <a 
-                href={amazonLink}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full sm:w-auto px-8 py-4 bg-[#FF9900] hover:bg-[#E48A00] text-gray-900 text-lg font-bold rounded-xl shadow-md transition-all text-center flex items-center justify-center gap-2"
-              >
-                Buy on Amazon
-              </a>
-            </div>
-            
+          {/* Tech Specs */}
+          <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm mt-2">
+            <h3 className="font-bold text-gray-900 mb-4">Battery Specifications</h3>
+            <ul className="space-y-3 text-sm text-gray-700">
+              <li className="flex justify-between border-b border-gray-50 pb-2">
+                <span className="text-gray-500">Brand</span>
+                <span className="font-medium">{part.brands?.name || 'Generic'}</span>
+              </li>
+              <li className="flex justify-between border-b border-gray-50 pb-2">
+                <span className="text-gray-500">Voltage</span>
+                <span className="font-medium">{part.voltage || 'N/A'}</span>
+              </li>
+              <li className="flex justify-between border-b border-gray-50 pb-2">
+                <span className="text-gray-500">Diameter</span>
+                <span className="font-medium">{part.diameter || 'N/A'}</span>
+              </li>
+              <li className="flex justify-between border-b border-gray-50 pb-2">
+                <span className="text-gray-500">Thickness</span>
+                <span className="font-medium">{part.thickness || 'N/A'}</span>
+              </li>
+            </ul>
           </div>
         </div>
       </div>
-    </div>
+    </main>
   );
 }

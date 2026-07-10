@@ -16,8 +16,9 @@ export default function Home() {
 
   useEffect(() => {
     async function fetchData() {
-      const junkNumbers = ['Pending', 'Unknown', 'Not Listed', 'Watch', 'N/A', 'Generic/Compatible', 'Not specified', 'General'];
-      const junkNames = ['Pending', 'Unknown', 'Not Listed', 'Not specified', 'Generic/Compatible', 'N/A', 'General'];
+      // Added your new junk terms to the arrays
+      const junkNumbers = ['Pending', 'Unknown', 'Not Listed', 'Not listed', 'Not Available', 'None', 'Watch', 'N/A', 'Generic/Compatible', 'Not specified', 'General'];
+      const junkNames = ['Pending', 'Unknown', 'Not Listed', 'Not listed', 'Not Available', 'None', 'Not specified', 'Generic/Compatible', 'N/A', 'General'];
 
       const [partsResponse, watchesResponse] = await Promise.all([
         supabase.from('parts').select('*, brands(name)'),
@@ -53,6 +54,13 @@ export default function Home() {
     return normalize(watch.model_name).includes(normalizedSearch) || normalize(watch.model_number).includes(normalizedSearch) || normalize(watch.brands?.name).includes(normalizedSearch);
   });
 
+  // Hides the mobile keyboard when the user presses Enter
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      e.target.blur();
+    }
+  };
+
   return (
     <main className="min-h-screen bg-gray-50 text-gray-900 font-sans">
       <header className="bg-gradient-to-r from-blue-700 to-indigo-800 text-white py-12 px-6 shadow-md text-center">
@@ -62,7 +70,14 @@ export default function Home() {
 
       <section className="max-w-6xl mx-auto p-6">
         <div className="mb-8">
-          <input type="text" placeholder="Search by watch model or battery type (e.g., Casio F-91W, CR2032)..." className="w-full p-4 border border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" value={search} onChange={(e) => setSearch(e.target.value)} />
+          <input 
+            type="text" 
+            placeholder="Search by watch model or battery type (e.g., Casio F-91W, CR2032)..." 
+            className="w-full p-4 border border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" 
+            value={search} 
+            onChange={(e) => setSearch(e.target.value)} 
+            onKeyDown={handleKeyDown} 
+          />
         </div>
 
         {loading ? (
@@ -70,7 +85,7 @@ export default function Home() {
         ) : (
           <div className="space-y-12">
             
-            {/* WATCHES TABLE - Updated with Stacked Brand/Model */}
+            {/* WATCHES TABLE */}
             {(filteredWatches.length > 0 || normalizedSearch) && (
               <div>
                 <h2 className="text-2xl font-bold text-gray-900 mb-4">Watch Models</h2>
