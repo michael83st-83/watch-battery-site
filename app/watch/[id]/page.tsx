@@ -14,6 +14,9 @@ export default function WatchPage() {
   const [watch, setWatch] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
+  // Easily swap this URL with your own Tool Kit image URL later
+  const TOOLKIT_IMAGE_URL = "https://images.unsplash.com/photo-1584281721531-90a6e09fb584?q=80&w=400&auto=format&fit=crop";
+
   useEffect(() => {
     async function fetchData() {
       if (!params?.id) return;
@@ -37,7 +40,6 @@ export default function WatchPage() {
 
   return (
     <main className="min-h-screen bg-gray-50 pb-12">
-      {/* Header */}
       <header className="bg-gradient-to-r from-blue-700 to-indigo-800 text-white p-6 shadow-md">
         <div className="max-w-5xl mx-auto">
           <Link href="/" className="text-indigo-200 text-sm hover:text-white mb-2 inline-block font-medium">&larr; Back to Search</Link>
@@ -46,34 +48,28 @@ export default function WatchPage() {
         </div>
       </header>
 
-      {/* Main Layout: 2-Column Grid on Desktop, Stacked on Mobile */}
       <div className="max-w-5xl mx-auto p-4 md:p-6 mt-4 grid grid-cols-1 lg:grid-cols-2 gap-8">
         
         {/* LEFT COLUMN: Visuals */}
         <div className="flex gap-4 h-48 md:h-64">
-           {/* Watch Image */}
+           {/* Watch Image / Battery Image */}
            <div className="flex-1 bg-white border border-gray-200 rounded-xl p-4 flex items-center justify-center shadow-sm">
              {watch.image_path ? (
                 <img src={watch.image_path} alt="Watch" className="max-h-full object-contain" />
+             ) : compatiblePart?.image_path ? (
+                <img src={compatiblePart.image_path} alt="Battery Default" className="max-h-full object-contain" />
              ) : (
-                <span className="text-xs font-medium text-gray-400 text-center">Watch Image<br/>Pending</span>
+                <span className="text-xs font-medium text-gray-400 text-center">Image<br/>Pending</span>
              )}
            </div>
            
-           {/* Tool Kit / Battery Image Slot */}
-           <div className="flex-1 bg-white border border-gray-200 rounded-xl p-4 flex items-center justify-center shadow-sm relative">
-             {compatiblePart?.image_path ? (
-                <img src={compatiblePart.image_path} alt="Battery" className="max-h-full object-contain" />
-             ) : (
-                <div className="flex flex-col items-center justify-center">
-                    <svg className="w-8 h-8 text-gray-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                    <span className="text-[10px] font-medium text-gray-400 text-center uppercase tracking-wide">Required<br/>Tool Kit</span>
-                </div>
-             )}
+           {/* Dedicated Tool Kit Image Slot */}
+           <div className="flex-1 bg-white border border-gray-200 rounded-xl flex items-center justify-center shadow-sm overflow-hidden">
+              <img src={TOOLKIT_IMAGE_URL} alt="Watch Repair Tool Kit" className="w-full h-full object-cover opacity-90" />
            </div>
         </div>
 
-        {/* RIGHT COLUMN: Buttons and Details (Above the fold) */}
+        {/* RIGHT COLUMN: Buttons and Details */}
         <div className="flex flex-col gap-4">
           <a href={batteryAmazonLink} target="_blank" rel="noopener noreferrer" className="block w-full bg-[#FF9900] hover:bg-[#E48A00] text-gray-900 text-center font-bold py-4 rounded-xl shadow-sm transition-colors text-lg">
             Buy Battery on Amazon
@@ -89,8 +85,28 @@ export default function WatchPage() {
             </div>
             <p className="text-gray-600 font-medium">Type: {compatiblePart?.part_type || 'N/A'}</p>
           </div>
-        </div>
 
+          {/* Re-added Tech Specs */}
+          {compatiblePart && (
+            <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm mt-2">
+              <h3 className="font-bold text-gray-900 mb-4">Battery Specifications</h3>
+              <ul className="space-y-3 text-sm text-gray-700">
+                <li className="flex justify-between border-b border-gray-50 pb-2">
+                  <span className="text-gray-500">Brand</span>
+                  <span className="font-medium">{compatiblePart.brands?.name || 'Generic'}</span>
+                </li>
+                <li className="flex justify-between border-b border-gray-50 pb-2">
+                  <span className="text-gray-500">Diameter</span>
+                  <span className="font-medium">{compatiblePart.diameter || 'N/A'}</span>
+                </li>
+                <li className="flex justify-between border-b border-gray-50 pb-2">
+                  <span className="text-gray-500">Thickness</span>
+                  <span className="font-medium">{compatiblePart.thickness || 'N/A'}</span>
+                </li>
+              </ul>
+            </div>
+          )}
+        </div>
       </div>
     </main>
   );
