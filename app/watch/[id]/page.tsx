@@ -32,8 +32,16 @@ export default function WatchPage() {
   if (!watch) return <div className="p-12 text-center text-gray-500 font-medium">Watch not found in database.</div>;
 
   const compatiblePart = watch.compatibility?.[0]?.parts;
+  
+  // Generic Amazon Search Links (No Affiliate Tags yet!)
   const batteryAmazonLink = `https://www.amazon.com/s?k=${encodeURIComponent(compatiblePart?.part_name || 'watch battery')}+replacement`;
   const toolKitAmazonLink = `https://www.amazon.com/s?k=watch+back+removal+tool+kit`;
+
+  // Dynamic YouTube Search Embed
+  const brandName = watch.brands?.name || '';
+  const modelName = watch.model_name !== 'N/A' ? watch.model_name : watch.model_number;
+  const youtubeSearchQuery = encodeURIComponent(`${brandName} ${modelName} watch battery replacement`);
+  const youtubeEmbedUrl = `https://www.youtube.com/embed?listType=search&list=${youtubeSearchQuery}`;
 
   return (
     <main className="min-h-screen bg-gray-50 pb-12">
@@ -47,7 +55,7 @@ export default function WatchPage() {
 
       <div className="max-w-5xl mx-auto p-4 md:p-6 mt-4 grid grid-cols-1 lg:grid-cols-2 gap-8">
         
-        {/* LEFT COLUMN: Visuals & Video Gap */}
+        {/* LEFT COLUMN: Visuals & Dynamic Video */}
         <div className="flex flex-col gap-6">
           <div className="flex gap-4 h-48 md:h-64">
              {/* Watch Image */}
@@ -69,12 +77,21 @@ export default function WatchPage() {
              </div>
           </div>
 
-          {/* YouTube Video Placeholder (Fills the gap perfectly) */}
+          {/* DYNAMIC YOUTUBE EMBED */}
           <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm hidden lg:block">
             <h3 className="font-bold text-gray-900 mb-3 text-lg">How to Open a {watch.brands?.name || 'Watch'} Backing</h3>
-            <div className="aspect-video bg-gray-100 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-300">
-               <span className="text-gray-400 font-medium">YouTube Video Embed Space</span>
+            <div className="aspect-video bg-gray-900 rounded-lg overflow-hidden border border-gray-200 shadow-inner">
+               <iframe 
+                  width="100%" 
+                  height="100%" 
+                  src={youtubeEmbedUrl} 
+                  title="YouTube video player" 
+                  frameBorder="0" 
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                  allowFullScreen
+               ></iframe>
             </div>
+            <p className="text-xs text-gray-500 mt-3 text-center">Video tutorials are pulled dynamically. Make sure you have the correct tools before attempting.</p>
           </div>
         </div>
 
