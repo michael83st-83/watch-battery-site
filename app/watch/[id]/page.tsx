@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import Link from 'next/link';
 
-export const revalidate = 0; // This line forces Next.js to always fetch fresh, live data!
+export const revalidate = 0;
 
 // Initialize Supabase
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
@@ -9,7 +9,6 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 export default async function WatchDetailPage({ params }: { params: { id: string } }) {
-  // Fetch the specific watch, safely converting the ID from the URL to a Number
   const { data: watch, error } = await supabase
     .from('Watch Batteries')
     .select('*')
@@ -33,7 +32,6 @@ export default async function WatchDetailPage({ params }: { params: { id: string
 
   return (
     <div className="min-h-screen bg-gray-50 font-sans">
-      {/* Header */}
       <header className="bg-indigo-700 text-white py-12 px-4 shadow-md">
         <div className="max-w-4xl mx-auto">
           <Link href="/" className="text-indigo-200 hover:text-white mb-4 inline-block text-sm font-medium transition-colors">
@@ -46,7 +44,6 @@ export default async function WatchDetailPage({ params }: { params: { id: string
       </header>
 
       <main className="max-w-4xl mx-auto p-4 py-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Left Column: Video */}
         <div className="space-y-6">
           {youtubeId && youtubeId !== 'NULL' ? (
             <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
@@ -67,7 +64,6 @@ export default async function WatchDetailPage({ params }: { params: { id: string
           )}
         </div>
 
-        {/* Right Column: Specs & Actions */}
         <div className="space-y-6">
           <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
             <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">
@@ -88,7 +84,6 @@ export default async function WatchDetailPage({ params }: { params: { id: string
             )}
           </div>
 
-          {/* Action Buttons (Only show if it needs a battery!) */}
           {requiresBattery && (
             <div className="space-y-3">
               <a 

@@ -1,4 +1,4 @@
-'use client';
+k'use client';
 import { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import Link from 'next/link';
@@ -46,7 +46,6 @@ export default function Home() {
         </div>
       </header>
 
-      {/* The negative margin is removed here to fix the input jumping bug */}
       <main className="max-w-4xl mx-auto p-4 py-8 relative z-10">
         <div className="bg-white rounded-xl shadow-md p-2 mb-8 border border-gray-200">
           <input
@@ -77,7 +76,7 @@ export default function Home() {
                   </tr>
                 ) : filteredWatches.length === 0 ? (
                   <tr>
-                    <td colSpan={3} className="p-8 text-center text-gray-500">No watches found matching "{searchTerm}"</td>
+                    <td colSpan={3} className="p-8 text-center text-gray-500">No watches found matching &quot;{searchTerm}&quot;</td>
                   </tr>
                 ) : (
                   filteredWatches.map((watch) => (
