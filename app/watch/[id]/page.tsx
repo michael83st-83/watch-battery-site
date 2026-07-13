@@ -1,17 +1,19 @@
 import { createClient } from '@supabase/supabase-js';
 import Link from 'next/link';
 
+export const revalidate = 0; // This line forces Next.js to always fetch fresh, live data!
+
 // Initialize Supabase
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 export default async function WatchDetailPage({ params }: { params: { id: string } }) {
-  // Fetch the specific watch
+  // Fetch the specific watch, safely converting the ID from the URL to a Number
   const { data: watch, error } = await supabase
     .from('Watch Batteries')
     .select('*')
-    .eq('id', params.id)
+    .eq('id', Number(params.id))
     .single();
 
   if (error || !watch) {

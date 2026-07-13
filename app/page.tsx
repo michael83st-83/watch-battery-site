@@ -46,8 +46,9 @@ export default function Home() {
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto p-4 py-8 -mt-8 relative z-10">
-        <div className="bg-white rounded-xl shadow-lg p-2 mb-8 border border-gray-100">
+      {/* The negative margin is removed here to fix the input jumping bug */}
+      <main className="max-w-4xl mx-auto p-4 py-8 relative z-10">
+        <div className="bg-white rounded-xl shadow-md p-2 mb-8 border border-gray-200">
           <input
             type="text"
             placeholder="Search by watch model or battery type (e.g., Seiko Prospex, SR927W)..."
