@@ -33,7 +33,7 @@ export default function WatchPage() {
 
   const compatiblePart = watch.compatibility?.[0]?.parts;
   
-  // Generic Amazon Search Links (No Affiliate Tags yet!)
+  // Generic Amazon Search Links
   const batteryAmazonLink = `https://www.amazon.com/s?k=${encodeURIComponent(compatiblePart?.part_name || 'watch battery')}+replacement`;
   const toolKitAmazonLink = `https://www.amazon.com/s?k=watch+back+removal+tool+kit`;
 
@@ -82,13 +82,13 @@ export default function WatchPage() {
             <h3 className="font-bold text-gray-900 mb-3 text-lg">How to Open a {watch.brands?.name || 'Watch'} Backing</h3>
             <div className="aspect-video bg-gray-900 rounded-lg overflow-hidden border border-gray-200 shadow-inner">
                <iframe 
-                  width="100%" 
-                  height="100%" 
-                  src={youtubeEmbedUrl} 
-                  title="YouTube video player" 
-                  frameBorder="0" 
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                  allowFullScreen
+                 width="100%" 
+                 height="100%" 
+                 src={youtubeEmbedUrl} 
+                 title="YouTube video player" 
+                 frameBorder="0" 
+                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                 allowFullScreen
                ></iframe>
             </div>
             <p className="text-xs text-gray-500 mt-3 text-center">Video tutorials are pulled dynamically. Make sure you have the correct tools before attempting.</p>
@@ -97,23 +97,33 @@ export default function WatchPage() {
 
         {/* RIGHT COLUMN: Buttons and Details */}
         <div className="flex flex-col gap-4">
-          <a href={batteryAmazonLink} target="_blank" rel="noopener noreferrer" className="block w-full bg-[#FF9900] hover:bg-[#E48A00] text-gray-900 text-center font-bold py-4 rounded-xl shadow-sm transition-colors text-lg">
-            Buy Battery on Amazon
-          </a>
-          <a href={toolKitAmazonLink} target="_blank" rel="noopener noreferrer" className="block w-full bg-gray-900 hover:bg-black text-white text-center font-bold py-4 rounded-xl shadow-sm transition-colors text-lg">
-            Get Watch Repair Tool Kit
-          </a>
+          
+          {/* CONDITIONAL AFFILIATE BUTTONS */}
+          {watch.requires_battery !== false ? (
+            <>
+              <a href={batteryAmazonLink} target="_blank" rel="noopener noreferrer" className="block w-full bg-[#FF9900] hover:bg-[#E48A00] text-gray-900 text-center font-bold py-4 rounded-xl shadow-sm transition-colors text-lg">
+                Buy Battery on Amazon
+              </a>
+              <a href={toolKitAmazonLink} target="_blank" rel="noopener noreferrer" className="block w-full bg-gray-900 hover:bg-black text-white text-center font-bold py-4 rounded-xl shadow-sm transition-colors text-lg">
+                Get Watch Repair Tool Kit
+              </a>
+            </>
+          ) : (
+            <a href={toolKitAmazonLink} target="_blank" rel="noopener noreferrer" className="block w-full bg-[#FF9900] hover:bg-[#E48A00] text-gray-900 text-center font-bold py-4 rounded-xl shadow-sm transition-colors text-lg">
+              Buy Watch Repair Toolkit (No Battery Required)
+            </a>
+          )}
           
           <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm mt-2">
             <h2 className="text-sm uppercase tracking-wider font-bold text-gray-500 mb-1">Required Battery Match</h2>
             <div className="text-3xl font-black text-gray-900 mb-1">
-              {compatiblePart?.part_name || 'Pending'}
+              {watch.requires_battery !== false ? (compatiblePart?.part_name || 'Pending') : 'N/A (Mechanical/Solar)'}
             </div>
-            <p className="text-gray-600 font-medium">Type: {compatiblePart?.part_type || 'N/A'}</p>
+            <p className="text-gray-600 font-medium">Type: {watch.requires_battery !== false ? (compatiblePart?.part_type || 'N/A') : 'Toolkit Recommended'}</p>
           </div>
 
           {/* Tech Specs */}
-          {compatiblePart && (
+          {compatiblePart && watch.requires_battery !== false && (
             <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm mt-2">
               <h3 className="font-bold text-gray-900 mb-4">Battery Specifications</h3>
               <ul className="space-y-3 text-sm text-gray-700">
