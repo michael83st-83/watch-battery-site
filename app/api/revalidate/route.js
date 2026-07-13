@@ -1,26 +1,23 @@
-{/* Check if the watch requires a standard battery */}
-{watch.requires_battery ? (
-  
-  // Show standard Battery Affiliate Link
-  <a 
-    href={`https://www.amazon.com/s?k=${watch.Model_Number}+watch+battery&tag=YOUR_AFFILIATE_TAG`} 
-    target="_blank" 
-    rel="noopener noreferrer"
-    className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-  >
-    Buy {watch.Model_Number} Battery
-  </a>
+export const dynamic = 'force-dynamic';
 
-) : (
-  
-  // Show Watch Toolkit Affiliate Link for Mechanical/Solar watches
-  <a 
-    href={`https://www.amazon.com/s?k=watch+repair+toolkit+case+opener&tag=YOUR_AFFILIATE_TAG`} 
-    target="_blank" 
-    rel="noopener noreferrer"
-    className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded"
-  >
-    Buy Watch Repair Toolkit
-  </a>
+import { revalidatePath } from 'next/cache';
+import { NextResponse } from 'next/server';
 
-)}
+export async function POST(request) {
+  try {
+    // Grab the secret from the URL provided by n8n
+    const secret = request.nextUrl.searchParams.get('secret');
+
+    // Verify the secret matches your environment variable
+    if (secret !== process.env.MY_SECRET_TOKEN) {
+      return NextResponse.json({ message: 'Invalid token' }, { status: 401 });
+    }
+
+    // Purge the cache for the homepage
+    revalidatePath('/');
+    
+    return NextResponse.json({ revalidated: true, now: Date.now() }, { status: 200 });
+  } catch (err) {
+    return NextResponse.json({ message: 'Error revalidating' }, { status: 500 });
+  }
+}
