@@ -49,7 +49,7 @@ export default function Home() {
           />
         </div>
         <h2 className="text-2xl font-bold text-gray-900 mb-4 px-2">Watch Database</h2>
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div className="min-h-[60vh] bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
