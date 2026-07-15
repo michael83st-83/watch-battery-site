@@ -3,9 +3,15 @@ import Link from 'next/link';
 
 export const revalidate = 0;
 export const dynamic = 'force-dynamic';
+
+// 1. Force Supabase to NEVER cache requests in Next.js
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  global: {
+    fetch: (url, options) => fetch(url, { ...options, cache: 'no-store' })
+  }
+});
 
 export default async function WatchDetailPage({ params }: { params: { id: string } }) {
   const { data: watch, error } = await supabase
@@ -14,10 +20,14 @@ export default async function WatchDetailPage({ params }: { params: { id: string
     .eq('id', Number(params.id))
     .single();
 
+  // 2. Print the EXACT error to the screen if it fails so we can diagnose it!
   if (error || !watch) {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
         <h1 className="text-2xl font-bold text-gray-900 mb-4">Watch Not Found</h1>
+        <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-lg mb-6 max-w-md text-center text-sm font-mono break-words shadow-sm">
+          {error ? `Supabase Error: ${error.message} (Code: ${error.code})` : `No watch found with ID: ${params.id} in the database.`}
+        </div>
         <Link href="/" className="text-indigo-600 hover:underline">← Back to Search</Link>
       </div>
     );
