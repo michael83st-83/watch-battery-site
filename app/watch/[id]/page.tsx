@@ -1,4 +1,4 @@
-mport { createClient } from '@supabase/supabase-js';
+import { createClient } from '@supabase/supabase-js';
 import Link from 'next/link';
 
 export const revalidate = 0;
@@ -7,9 +7,16 @@ export const dynamic = 'force-dynamic';
 // Force Supabase to NEVER cache requests in Next.js
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  global: {
+    fetch: (url, options) => fetch(url, { ...options, cache: 'no-store' })
+  }
+});
 
+// We use "any" for params to safely support the new Next.js 15 update
 export default async function WatchDetailPage({ params }: { params: any }) {
+  
+  // THE FIX: We must "await" the params object before trying to read the ID!
   const resolvedParams = await params;
   const watchId = Number(resolvedParams.id);
 
