@@ -53,7 +53,6 @@ export default async function WatchDetailPage({ params }: { params: Promise<{ id
   const amazonBatteryUrl = `https://www.amazon.com/s?k=${encodeURIComponent(batteryModel + ' watch battery')}&tag=${affiliateTag}`;
   const amazonToolKitUrl = `https://www.amazon.com/s?k=watch+repair+kit+back+remover&tag=${affiliateTag}`;
 
-  // Bulletproof Inline SVG Placeholders
   const batteryPicUrl = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150' viewBox='0 0 150 150'%3E%3Crect width='150' height='150' fill='%23FF9900'/%3E%3Ctext x='50%25' y='50%25' font-family='sans-serif' font-size='18' fill='white' font-weight='bold' dominant-baseline='middle' text-anchor='middle'%3EBattery%3C/text%3E%3C/svg%3E";
   const toolKitPicUrl = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150' viewBox='0 0 150 150'%3E%3Crect width='150' height='150' fill='%23111827'/%3E%3Ctext x='50%25' y='50%25' font-family='sans-serif' font-size='18' fill='white' font-weight='bold' dominant-baseline='middle' text-anchor='middle'%3ETool Kit%3C/text%3E%3C/svg%3E";
 

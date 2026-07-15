@@ -6,10 +6,8 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  // IMPORTANT: Replace this with your actual live domain once you have it
   const baseUrl = 'https://www.watchbattery.ai'; 
 
-  // Fetches the first 50,000 to keep within Google's single-file sitemap limit.
   const { data: watches } = await supabase
     .from('Watch Batteries')
     .select('id, created_at')
