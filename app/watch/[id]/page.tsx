@@ -11,18 +11,15 @@ const supabase = createClient(supabaseUrl, supabaseAnonKey, {
 });
 
 export default async function WatchDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  // 1. Await Next.js 15 params
   const resolvedParams = await params;
   const watchId = Number(resolvedParams.id);
 
-  // 2. Fetch from Supabase
   const { data: watch, error } = await supabase
     .from('Watch Batteries')
     .select('*')
     .eq('id', watchId)
     .single();
 
-  // 3. Error State
   if (error || !watch) {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
@@ -35,7 +32,6 @@ export default async function WatchDetailPage({ params }: { params: Promise<{ id
     );
   }
 
-  // 4. Extract Variables
   const watchName = watch.watch_query;
   const batteryModel = watch['Model Number'];
   const requiresBattery = watch.requires_battery;
@@ -43,14 +39,26 @@ export default async function WatchDetailPage({ params }: { params: Promise<{ id
   const watchPic = watch['Picture url'];
   const rawYoutubeId = watch.youtube_video_id;
 
-  // 5. Clean YouTube ID
-  let cleanYoutubeId = rawYoutubeId;
+  // Better YouTube Parsing Logic
+  let cleanYoutubeId = null;
   if (rawYoutubeId && rawYoutubeId !== 'NULL') {
     const urlMatch = rawYoutubeId.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([\w-]{11})/);
-    if (urlMatch && urlMatch[1]) cleanYoutubeId = urlMatch[1];
+    if (urlMatch && urlMatch[1]) {
+      cleanYoutubeId = urlMatch[1];
+    } else if (rawYoutubeId.length === 11) {
+      cleanYoutubeId = rawYoutubeId; // Handles cases where DB just has the ID
+    }
   }
 
-  // 6. JSON-LD Schema
+  // Amazon Affiliate Link Generation
+  const affiliateTag = "YOUR_AFFILIATE_TAG_HERE";
+  const amazonBatteryUrl = `https://www.amazon.com/s?k=${encodeURIComponent(batteryModel + ' watch battery')}&tag=${affiliateTag}`;
+  const amazonToolKitUrl = `https://www.amazon.com/s?k=watch+repair+kit+back+remover&tag=${affiliateTag}`;
+
+  // Image Placeholders (Replace these URLs with your actual asset links later)
+  const batteryPicUrl = "https://via.placeholder.com/150/FF9900/FFFFFF?text=Battery+Pic";
+  const toolKitPicUrl = "https://via.placeholder.com/150/111827/FFFFFF?text=Tool+Kit+Pic";
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "HowTo",
@@ -65,8 +73,10 @@ export default async function WatchDetailPage({ params }: { params: Promise<{ id
 
       <header className="bg-indigo-700 text-white py-12 px-4 shadow-md">
         <div className="max-w-4xl mx-auto flex items-center gap-6">
-          {watchPic && watchPic !== 'NULL' && (
+          {watchPic && watchPic !== 'NULL' ? (
             <img src={watchPic} alt={watchName} className="w-24 h-24 object-cover rounded-lg shadow-sm bg-white" />
+          ) : (
+            <div className="w-24 h-24 bg-indigo-800 rounded-lg flex items-center justify-center text-xs text-center border border-indigo-600">No Watch<br/>Pic in DB</div>
           )}
           <div>
             <Link href="/" className="text-indigo-200 hover:text-white mb-2 inline-block text-sm font-medium transition-colors">&larr; Back to Search</Link>
@@ -77,9 +87,7 @@ export default async function WatchDetailPage({ params }: { params: Promise<{ id
 
       <main className="max-w-4xl mx-auto p-4 py-8 flex flex-col md:grid md:grid-cols-2 gap-6">
         
-        {/* RIGHT COLUMN ON DESKTOP, MOVED TO TOP ON MOBILE */}
         <div className="order-1 md:order-2 space-y-6">
-          
           <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
             <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Required Battery Match</h2>
             <div className="text-3xl font-black text-gray-900 mb-4">{requiresBattery ? batteryModel : 'Mechanical / Solar'}</div>
@@ -92,35 +100,35 @@ export default async function WatchDetailPage({ params }: { params: Promise<{ id
 
             <p className="text-sm text-gray-600 mb-6">
               {requiresBattery 
-                ? `This watch requires a ${batteryModel} battery. Grab a replacement and a tool kit below to do it yourself.` 
-                : `This watch is powered by movement or light. While it doesn't need a battery, a repair kit is recommended for maintenance and strap adjustments.`}
+                ? `This watch requires a ${batteryModel} battery. Grab a replacement below.` 
+                : `This watch is powered by movement or light. While it doesn't need a battery, a repair kit is recommended for maintenance.`}
             </p>
           </div>
 
           <div className="space-y-4">
-            {requiresBattery && (
-              <a href="#" className="flex items-center gap-4 bg-[#FF9900] hover:bg-[#e38800] transition-colors p-4 rounded-xl shadow-md text-gray-900 font-bold group">
-                <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center text-2xl shadow-inner group-hover:scale-105 transition-transform">🔋</div>
+            {/* Conditional Logic: Battery vs Toolkit */}
+            {requiresBattery ? (
+              <a href={amazonBatteryUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-4 bg-[#FF9900] hover:bg-[#e38800] transition-colors p-4 rounded-xl shadow-md text-gray-900 font-bold group">
+                <img src={batteryPicUrl} alt="Battery" className="w-16 h-16 object-cover rounded bg-white shadow-inner" />
                 <div>
                   <span className="block text-sm font-medium opacity-80">Buy Replacement Battery</span>
                   Amazon: {batteryModel} Battery
                 </div>
               </a>
+            ) : (
+              <a href={amazonToolKitUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-4 bg-gray-900 hover:bg-black transition-colors p-4 rounded-xl shadow-md text-white group">
+                <img src={toolKitPicUrl} alt="Tool Kit" className="w-16 h-16 object-cover rounded bg-gray-800 shadow-inner" />
+                <div>
+                  <span className="block text-sm font-medium opacity-80">Buy Recommended Tool</span>
+                  Amazon: Watch Repair Kit
+                </div>
+              </a>
             )}
-            <a href="#" className="flex items-center gap-4 bg-gray-900 hover:bg-black transition-colors p-4 rounded-xl shadow-md text-white group">
-              <div className="w-12 h-12 bg-gray-800 rounded-lg flex items-center justify-center text-2xl shadow-inner group-hover:scale-105 transition-transform">🪛</div>
-              <div>
-                <span className="block text-sm font-medium opacity-80">Buy Recommended Tool</span>
-                Amazon: Watch Repair Kit
-              </div>
-            </a>
           </div>
-
         </div>
 
-        {/* LEFT COLUMN ON DESKTOP, MOVED BELOW ACTIONS ON MOBILE */}
         <div className="order-2 md:order-1 space-y-6">
-          {cleanYoutubeId && cleanYoutubeId !== 'NULL' ? (
+          {cleanYoutubeId ? (
             <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
               <h3 className="font-bold text-gray-900 mb-4 text-lg">How to Open: {watchName}</h3>
               <div className="aspect-video rounded-lg overflow-hidden bg-gray-100">
