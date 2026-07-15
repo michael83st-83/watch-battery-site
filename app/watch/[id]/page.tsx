@@ -13,11 +13,13 @@ const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   }
 });
 
-export default async function WatchDetailPage({ params }: { params: { id: string } }) {
+export default async function WatchDetailPage({ params }: { params: { any } }) {
+const resolvedParams = await params;
+  const watchId = Number(resolvedParams.id);
   const { data: watch, error } = await supabase
     .from('Watch Batteries')
     .select('*')
-    .eq('id', Number(params.id))
+    .eq('id', watchId)
     .single();
 
   // 2. Print the EXACT error to the screen if it fails so we can diagnose it!
