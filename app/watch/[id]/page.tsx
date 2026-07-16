@@ -33,8 +33,8 @@ export default async function WatchDetailPage({ params }: { params: Promise<{ id
   }
 
   const watchName = watch.watch_query;
-  const batteryModel = watch['Model Number'];
-  const powerType = watch.power_type?.toLowerCase() || 'quartz'; // Fallback to quartz if null
+  const rawBatteryModel = watch['Model Number'];
+  const powerType = watch.power_type?.toLowerCase() || 'quartz';
   const voltage = watch.Voltage;
   const watchPic = watch['Picture url'];
   const rawYoutubeId = watch.youtube_video_id;
@@ -50,33 +50,38 @@ export default async function WatchDetailPage({ params }: { params: Promise<{ id
     }
   }
 
+  // Handle "N/A" gracefully so the UI never looks broken
+  const isBatteryUnknown = !rawBatteryModel || rawBatteryModel === 'N/A' || rawBatteryModel === 'NULL';
+  const displayBatteryModel = isBatteryUnknown 
+    ? (powerType === 'solar' ? 'Rechargeable Cell' : 'Replacement Battery') 
+    : rawBatteryModel;
+
   // Affiliate & Linking Logic
   const affiliateTag = "YOUR_AFFILIATE_TAG_HERE";
-  let amazonUrl = "";
+  
+  const toolKitUrl = `https://www.amazon.com/s?k=watch+repair+kit+back+remover&tag=${affiliateTag}`;
+  
+  let powerUrl = "";
   let ctaText = "";
   let ctaSubText = "";
   let statusTitle = "";
   let statusDescription = "";
 
   if (powerType === 'solar') {
-    amazonUrl = `https://www.amazon.com/s?k=${encodeURIComponent(batteryModel + ' watch capacitor replacement')}&tag=${affiliateTag}`;
+    powerUrl = `https://www.amazon.com/s?k=${encodeURIComponent(watchName + ' watch capacitor ' + (isBatteryUnknown ? '' : displayBatteryModel))}&tag=${affiliateTag}`;
     ctaText = "Buy Solar Capacitor";
-    ctaSubText = `Amazon: ${batteryModel} Capacitor`;
-    statusTitle = batteryModel;
-    statusDescription = `This is a solar watch. It requires a specific ${batteryModel} rechargeable capacitor, NOT a standard battery.`;
+    ctaSubText = `Amazon: ${isBatteryUnknown ? watchName + ' Capacitor' : displayBatteryModel}`;
+    statusTitle = isBatteryUnknown ? "Solar Capacitor" : displayBatteryModel;
+    statusDescription = `This is a solar watch. It requires a specific rechargeable capacitor, NOT a standard battery.`;
   } else if (powerType === 'mechanical') {
-    amazonUrl = `https://www.amazon.com/s?k=watch+repair+kit+back+remover&tag=${affiliateTag}`;
-    ctaText = "Buy Recommended Tool";
-    ctaSubText = "Amazon: Watch Repair Kit";
     statusTitle = "Mechanical (No Battery)";
     statusDescription = "This watch is powered by a mechanical movement. It does not use a battery, but a repair kit is recommended for safe case opening and maintenance.";
   } else {
-    // Default Quartz
-    amazonUrl = `https://www.amazon.com/s?k=${encodeURIComponent(batteryModel + ' watch battery')}&tag=${affiliateTag}`;
+    powerUrl = `https://www.amazon.com/s?k=${encodeURIComponent(watchName + ' watch battery ' + (isBatteryUnknown ? '' : displayBatteryModel))}&tag=${affiliateTag}`;
     ctaText = "Buy Replacement Battery";
-    ctaSubText = `Amazon: ${batteryModel} Battery`;
-    statusTitle = batteryModel;
-    statusDescription = `This watch requires a standard ${batteryModel} battery. Grab a replacement below.`;
+    ctaSubText = `Amazon: ${isBatteryUnknown ? watchName + ' Battery' : displayBatteryModel}`;
+    statusTitle = isBatteryUnknown ? "Standard Battery" : displayBatteryModel;
+    statusDescription = `This watch requires a standard battery. Grab a replacement below.`;
   }
 
   // SVG Placeholders
@@ -88,8 +93,8 @@ export default async function WatchDetailPage({ params }: { params: Promise<{ id
     "@context": "https://schema.org",
     "@type": "HowTo",
     "name": `How to open and replace battery for ${watchName}`,
-    "description": powerType === 'mechanical' ? `Maintenance and opening guide for the mechanical ${watchName}.` : `Step-by-step guide to replacing the ${batteryModel} power cell in a ${watchName}.`,
-    "tool": powerType === 'mechanical' ? [{ "@type": "HowToTool", "name": "Watch Repair Kit" }] : [{ "@type": "HowToTool", "name": "Watch Repair Kit" }, { "@type": "HowToTool", "name": `${batteryModel} Battery/Capacitor` }]
+    "description": powerType === 'mechanical' ? `Maintenance and opening guide for the mechanical ${watchName}.` : `Step-by-step guide to replacing the ${displayBatteryModel} power cell in a ${watchName}.`,
+    "tool": powerType === 'mechanical' ? [{ "@type": "HowToTool", "name": "Watch Repair Kit" }] : [{ "@type": "HowToTool", "name": "Watch Repair Kit" }, { "@type": "HowToTool", "name": `${displayBatteryModel}` }]
   };
 
   return (
@@ -130,11 +135,21 @@ export default async function WatchDetailPage({ params }: { params: Promise<{ id
           </div>
 
           <div className="space-y-4">
-            <a href={amazonUrl} target="_blank" rel="noopener noreferrer" className={`flex items-center gap-4 transition-colors p-4 rounded-xl shadow-md font-bold group ${powerType === 'mechanical' ? 'bg-gray-900 hover:bg-black text-white' : 'bg-[#FF9900] hover:bg-[#e38800] text-gray-900'}`}>
-              <img src={powerType === 'mechanical' ? toolKitPicUrl : batteryPicUrl} alt="Product Placeholder" className={`w-16 h-16 object-cover rounded shadow-inner ${powerType === 'mechanical' ? 'bg-gray-800' : 'bg-white'}`} />
+            {powerType !== 'mechanical' && (
+              <a href={powerUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-4 transition-colors p-4 rounded-xl shadow-md font-bold group bg-[#FF9900] hover:bg-[#e38800] text-gray-900">
+                <img src={batteryPicUrl} alt="Power Source" className="w-16 h-16 object-cover rounded shadow-inner bg-white" />
+                <div>
+                  <span className="block text-sm font-medium opacity-80">{ctaText}</span>
+                  {ctaSubText}
+                </div>
+              </a>
+            )}
+
+            <a href={toolKitUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-4 transition-colors p-4 rounded-xl shadow-md font-bold group bg-gray-900 hover:bg-black text-white">
+              <img src={toolKitPicUrl} alt="Tool Kit" className="w-16 h-16 object-cover rounded shadow-inner bg-gray-800" />
               <div>
-                <span className="block text-sm font-medium opacity-80">{ctaText}</span>
-                {ctaSubText}
+                <span className="block text-sm font-medium opacity-80">Buy Recommended Tool</span>
+                Amazon: Watch Repair Kit
               </div>
             </a>
           </div>
