@@ -34,11 +34,12 @@ export default async function WatchDetailPage({ params }: { params: Promise<{ id
 
   const watchName = watch.watch_query;
   const batteryModel = watch['Model Number'];
-  const requiresBattery = watch.requires_battery;
+  const powerType = watch.power_type?.toLowerCase() || 'quartz'; // Fallback to quartz if null
   const voltage = watch.Voltage;
   const watchPic = watch['Picture url'];
   const rawYoutubeId = watch.youtube_video_id;
 
+  // Clean the YouTube ID
   let cleanYoutubeId = null;
   if (rawYoutubeId && rawYoutubeId !== 'NULL') {
     const urlMatch = rawYoutubeId.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([\w-]{11})/);
@@ -49,19 +50,46 @@ export default async function WatchDetailPage({ params }: { params: Promise<{ id
     }
   }
 
+  // Affiliate & Linking Logic
   const affiliateTag = "YOUR_AFFILIATE_TAG_HERE";
-  const amazonBatteryUrl = `https://www.amazon.com/s?k=${encodeURIComponent(batteryModel + ' watch battery')}&tag=${affiliateTag}`;
-  const amazonToolKitUrl = `https://www.amazon.com/s?k=watch+repair+kit+back+remover&tag=${affiliateTag}`;
+  let amazonUrl = "";
+  let ctaText = "";
+  let ctaSubText = "";
+  let statusTitle = "";
+  let statusDescription = "";
 
-  const batteryPicUrl = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150' viewBox='0 0 150 150'%3E%3Crect width='150' height='150' fill='%23FF9900'/%3E%3Ctext x='50%25' y='50%25' font-family='sans-serif' font-size='18' fill='white' font-weight='bold' dominant-baseline='middle' text-anchor='middle'%3EBattery%3C/text%3E%3C/svg%3E";
+  if (powerType === 'solar') {
+    amazonUrl = `https://www.amazon.com/s?k=${encodeURIComponent(batteryModel + ' watch capacitor replacement')}&tag=${affiliateTag}`;
+    ctaText = "Buy Solar Capacitor";
+    ctaSubText = `Amazon: ${batteryModel} Capacitor`;
+    statusTitle = batteryModel;
+    statusDescription = `This is a solar watch. It requires a specific ${batteryModel} rechargeable capacitor, NOT a standard battery.`;
+  } else if (powerType === 'mechanical') {
+    amazonUrl = `https://www.amazon.com/s?k=watch+repair+kit+back+remover&tag=${affiliateTag}`;
+    ctaText = "Buy Recommended Tool";
+    ctaSubText = "Amazon: Watch Repair Kit";
+    statusTitle = "Mechanical (No Battery)";
+    statusDescription = "This watch is powered by a mechanical movement. It does not use a battery, but a repair kit is recommended for safe case opening and maintenance.";
+  } else {
+    // Default Quartz
+    amazonUrl = `https://www.amazon.com/s?k=${encodeURIComponent(batteryModel + ' watch battery')}&tag=${affiliateTag}`;
+    ctaText = "Buy Replacement Battery";
+    ctaSubText = `Amazon: ${batteryModel} Battery`;
+    statusTitle = batteryModel;
+    statusDescription = `This watch requires a standard ${batteryModel} battery. Grab a replacement below.`;
+  }
+
+  // SVG Placeholders
+  const batteryPicUrl = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150' viewBox='0 0 150 150'%3E%3Crect width='150' height='150' fill='%23FF9900'/%3E%3Ctext x='50%25' y='50%25' font-family='sans-serif' font-size='18' fill='white' font-weight='bold' dominant-baseline='middle' text-anchor='middle'%3EPower%3C/text%3E%3C/svg%3E";
   const toolKitPicUrl = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150' viewBox='0 0 150 150'%3E%3Crect width='150' height='150' fill='%23111827'/%3E%3Ctext x='50%25' y='50%25' font-family='sans-serif' font-size='18' fill='white' font-weight='bold' dominant-baseline='middle' text-anchor='middle'%3ETool Kit%3C/text%3E%3C/svg%3E";
 
+  // SEO JSON-LD
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "HowTo",
     "name": `How to open and replace battery for ${watchName}`,
-    "description": requiresBattery ? `Step-by-step guide to replacing the ${batteryModel} battery in a ${watchName}.` : `Maintenance and opening guide for the mechanical/solar ${watchName}.`,
-    "tool": requiresBattery ? [{ "@type": "HowToTool", "name": "Watch Repair Kit" }, { "@type": "HowToTool", "name": `${batteryModel} Battery` }] : [{ "@type": "HowToTool", "name": "Watch Repair Kit" }]
+    "description": powerType === 'mechanical' ? `Maintenance and opening guide for the mechanical ${watchName}.` : `Step-by-step guide to replacing the ${batteryModel} power cell in a ${watchName}.`,
+    "tool": powerType === 'mechanical' ? [{ "@type": "HowToTool", "name": "Watch Repair Kit" }] : [{ "@type": "HowToTool", "name": "Watch Repair Kit" }, { "@type": "HowToTool", "name": `${batteryModel} Battery/Capacitor` }]
   };
 
   return (
@@ -89,40 +117,26 @@ export default async function WatchDetailPage({ params }: { params: Promise<{ id
         
         <div className="order-1 md:order-2 space-y-6">
           <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
-            <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Required Battery Match</h2>
-            <div className="text-3xl font-black text-gray-900 mb-4">{requiresBattery ? batteryModel : 'Mechanical / Solar'}</div>
+            <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Required Power Source</h2>
+            <div className="text-3xl font-black text-gray-900 mb-4">{statusTitle}</div>
             
-            {requiresBattery && voltage && (
+            {powerType !== 'mechanical' && voltage && voltage !== 'N/A' && (
               <div className="mb-4 inline-block bg-indigo-50 border border-indigo-100 text-indigo-800 text-xs font-bold px-3 py-1 rounded-full">
-                Voltage: {voltage}V
+                Voltage: {voltage}
               </div>
             )}
 
-            <p className="text-sm text-gray-600 mb-6">
-              {requiresBattery 
-                ? `This watch requires a ${batteryModel} battery. Grab a replacement below.` 
-                : `This watch is powered by movement or light. While it doesn't need a battery, a repair kit is recommended for maintenance.`}
-            </p>
+            <p className="text-sm text-gray-600 mb-6">{statusDescription}</p>
           </div>
 
           <div className="space-y-4">
-            {requiresBattery ? (
-              <a href={amazonBatteryUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-4 bg-[#FF9900] hover:bg-[#e38800] transition-colors p-4 rounded-xl shadow-md text-gray-900 font-bold group">
-                <img src={batteryPicUrl} alt="Battery Placeholder" className="w-16 h-16 object-cover rounded bg-white shadow-inner" />
-                <div>
-                  <span className="block text-sm font-medium opacity-80">Buy Replacement Battery</span>
-                  Amazon: {batteryModel} Battery
-                </div>
-              </a>
-            ) : (
-              <a href={amazonToolKitUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-4 bg-gray-900 hover:bg-black transition-colors p-4 rounded-xl shadow-md text-white group">
-                <img src={toolKitPicUrl} alt="Tool Kit Placeholder" className="w-16 h-16 object-cover rounded bg-gray-800 shadow-inner" />
-                <div>
-                  <span className="block text-sm font-medium opacity-80">Buy Recommended Tool</span>
-                  Amazon: Watch Repair Kit
-                </div>
-              </a>
-            )}
+            <a href={amazonUrl} target="_blank" rel="noopener noreferrer" className={`flex items-center gap-4 transition-colors p-4 rounded-xl shadow-md font-bold group ${powerType === 'mechanical' ? 'bg-gray-900 hover:bg-black text-white' : 'bg-[#FF9900] hover:bg-[#e38800] text-gray-900'}`}>
+              <img src={powerType === 'mechanical' ? toolKitPicUrl : batteryPicUrl} alt="Product Placeholder" className={`w-16 h-16 object-cover rounded shadow-inner ${powerType === 'mechanical' ? 'bg-gray-800' : 'bg-white'}`} />
+              <div>
+                <span className="block text-sm font-medium opacity-80">{ctaText}</span>
+                {ctaSubText}
+              </div>
+            </a>
           </div>
         </div>
 
