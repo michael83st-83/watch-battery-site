@@ -45,19 +45,24 @@ export default function Home() {
 
   return (
     <div className="bg-gray-50 font-sans flex flex-col">
-      <header className="bg-indigo-700 text-white py-16 px-4 shadow-md">
+      {/* MOBILE FIX: Reduced padding from py-16 to py-8 on mobile */}
+      <header className="bg-indigo-700 text-white py-8 md:py-16 px-4 shadow-md">
         <div className="max-w-4xl mx-auto text-center flex flex-col items-center">
           
-          <h1 className="flex items-center justify-center space-x-3 mb-6 select-none">
-            <div className="bg-white text-indigo-700 font-black text-3xl md:text-4xl px-3 py-1 rounded-lg shadow-lg tracking-tighter transform -rotate-2 border-b-4 border-indigo-200">
+          {/* MOBILE FIX: Forced flex-row and wrap so the WBL block and text stay together properly */}
+          <h1 className="flex flex-row items-center justify-center gap-3 mb-4 select-none flex-wrap">
+            <div className="bg-white text-indigo-700 font-black text-2xl md:text-4xl px-3 py-1 rounded-lg shadow-lg tracking-tighter transform -rotate-2 border-b-4 border-indigo-200">
               WBL
             </div>
-            <div className="text-4xl md:text-5xl font-extrabold tracking-tight">
+            <div className="text-3xl md:text-5xl font-extrabold tracking-tight">
               Watch <span className="text-indigo-300">Battery</span> Lookup
             </div>
           </h1>
 
-          <p className="text-indigo-100 text-lg md:text-xl max-w-2xl mx-auto font-medium">The web's most comprehensive database for watch battery types, solar capacitors, and repair guides.</p>
+          {/* MOBILE FIX: Adjusted text sizes and line heights for a cleaner read on small screens */}
+          <p className="text-indigo-100 text-base md:text-xl max-w-2xl mx-auto font-medium leading-relaxed">
+            The web's most comprehensive database for watch battery types, solar capacitors, and repair guides.
+          </p>
         </div>
       </header>
 
@@ -115,7 +120,6 @@ export default function Home() {
                         )}
                       </td>
                       <td className="p-4 text-right">
-                        {/* UPDATE: Linking to the new slug! */}
                         <Link href={`/watch/${watch.slug}`} className="inline-block bg-indigo-600 text-white py-2 px-4 rounded-lg font-bold text-xs hover:bg-indigo-700 transition-colors shadow-sm">View Details &rarr;</Link>
                       </td>
                     </tr>
