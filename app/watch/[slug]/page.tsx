@@ -1,8 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
 
-// This completely disables Vercel caching for this dynamic route
 export const dynamic = 'force-dynamic';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
@@ -11,21 +9,33 @@ const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 export default async function WatchPage({ params }: { params: { slug: string } }) {
   
-  // Use .limit(1) instead of .single() to prevent crashes if there are duplicate test rows
   const { data, error } = await supabase
     .from('Watch Batteries')
     .select('*')
     .eq('slug', params.slug)
     .limit(1);
 
-  // Safely grab the first result
   const watch = data?.[0];
 
+  // --- DIAGNOSTIC BLOCK ---
+  // If it fails, it will print the exact database error on the screen instead of a 404
   if (error || !watch) {
-    console.error("Fetch error or missing watch:", error);
-    notFound();
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+        <div className="bg-white p-8 rounded-xl shadow-lg max-w-2xl w-full border-t-4 border-red-500 font-mono text-sm">
+          <h1 className="text-2xl font-bold text-gray-900 mb-6 uppercase tracking-wider">Database Fetch Failed</h1>
+          <div className="space-y-4 text-gray-700">
+            <p><strong className="text-indigo-600">URL Slug Searched:</strong> {params.slug}</p>
+            <p><strong className="text-red-600">Supabase Error:</strong> {JSON.stringify(error || 'None')}</p>
+            <p><strong className="text-amber-600">Data Array Returned:</strong> {JSON.stringify(data)}</p>
+          </div>
+          <Link href="/" className="mt-8 inline-block bg-gray-900 text-white px-6 py-2 rounded-lg font-bold">Go Back</Link>
+        </div>
+      </div>
+    );
   }
 
+  // --- NORMAL UI CODE ---
   const isMechanical = watch.power_type === 'mechanical';
   const isSolar = watch.power_type === 'solar';
   const hasBattery = !isMechanical && !isSolar && watch['Model Number'] && watch['Model Number'] !== 'N/A' && watch['Model Number'] !== 'NULL';
