@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import Link from 'next/link';
+import { notFound } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
 
@@ -9,7 +10,6 @@ const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 export default async function WatchPage({ params }: { params: any }) {
   
-  // THE FIX: Newer Next.js versions require params to be awaited!
   const resolvedParams = await params;
   const actualSlug = resolvedParams?.slug || resolvedParams?.id;
 
@@ -21,25 +21,11 @@ export default async function WatchPage({ params }: { params: any }) {
 
   const watch = data?.[0];
 
-  // DIAGNOSTIC SCREEN: If it fails, it prints exactly what Next.js is doing
   if (error || !watch) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-        <div className="bg-white p-8 rounded-xl shadow-lg max-w-2xl w-full border-t-4 border-red-500 font-mono text-sm">
-          <h1 className="text-2xl font-bold text-gray-900 mb-6 uppercase tracking-wider">Database Fetch Failed</h1>
-          <div className="space-y-4 text-gray-700">
-            <p><strong className="text-indigo-600">Raw Next.js Params:</strong> {JSON.stringify(resolvedParams)}</p>
-            <p><strong className="text-indigo-600">Resolved Slug:</strong> {actualSlug || 'UNDEFINED'}</p>
-            <p><strong className="text-red-600">Supabase Error:</strong> {JSON.stringify(error || 'None')}</p>
-            <p><strong className="text-amber-600">Data Array Returned:</strong> {JSON.stringify(data)}</p>
-          </div>
-          <Link href="/" className="mt-8 inline-block bg-gray-900 text-white px-6 py-2 rounded-lg font-bold">Go Back</Link>
-        </div>
-      </div>
-    );
+    console.error("Fetch error or missing watch:", error);
+    notFound();
   }
 
-  // --- NORMAL UI CODE ---
   const isMechanical = watch.power_type === 'mechanical';
   const isSolar = watch.power_type === 'solar';
   const hasBattery = !isMechanical && !isSolar && watch['Model Number'] && watch['Model Number'] !== 'N/A' && watch['Model Number'] !== 'NULL';
@@ -63,10 +49,11 @@ export default async function WatchPage({ params }: { params: any }) {
           
           <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 flex flex-col h-full">
             <h2 className="text-xl font-bold text-gray-900 mb-4 border-b pb-2">How to Open: {watch.watch_query}</h2>
-            {watch.youtube_embed ? (
+            {/* FIX: Check for youtube_video_id instead of youtube_embed, and construct the correct iframe URL */}
+            {watch.youtube_video_id ? (
               <div className="relative w-full aspect-video rounded-xl overflow-hidden shadow-inner bg-gray-100 flex-grow">
                 <iframe
-                  src={watch.youtube_embed}
+                  src={`https://www.youtube.com/embed/${watch.youtube_video_id}`}
                   title={`How to replace battery in ${watch.watch_query}`}
                   className="absolute top-0 left-0 w-full h-full"
                   allowFullScreen
