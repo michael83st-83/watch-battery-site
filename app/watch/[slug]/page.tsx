@@ -26,14 +26,22 @@ export default async function WatchPage({ params }: { params: any }) {
     notFound();
   }
 
-  // Refined Logic Check
+  // --- SMART LOGIC ---
   const isMechanical = watch.power_type === 'mechanical';
   const isSolar = watch.power_type === 'solar';
-  const powerModel = watch['Model Number'];
-  const hasValidPowerModel = powerModel && powerModel !== 'N/A' && powerModel !== 'NULL';
+  const rawModel = watch['Model Number'];
   
-  // Both standard and solar watches need a purchase link (as long as they aren't mechanical)
-  const showPowerLink = !isMechanical && hasValidPowerModel;
+  // Check if we actually have a specific model number like "SR927W" or "MT920"
+  const hasValidPowerModel = rawModel && rawModel !== 'N/A' && rawModel !== 'NULL' && rawModel.trim() !== '';
+
+  // If we don't have the exact model, fallback to searching the watch name + battery/capacitor
+  const amazonSearchTerm = hasValidPowerModel 
+    ? rawModel 
+    : `${watch.watch_query} ${isSolar ? 'capacitor' : 'battery'}`;
+
+  const displayModelTitle = hasValidPowerModel 
+    ? rawModel 
+    : (isSolar ? 'Solar Capacitor' : 'Battery');
 
   const videoId = watch.youtube_video_id || watch['youtube_video_id '] || null;
 
@@ -58,13 +66,19 @@ export default async function WatchPage({ params }: { params: any }) {
             <h2 className="text-xl font-bold text-gray-900 mb-4 border-b pb-2">How to Open: {watch.watch_query}</h2>
             
             {videoId ? (
-              <div className="relative w-full aspect-video rounded-xl overflow-hidden shadow-inner bg-gray-100 flex-grow">
-                <iframe
-                  src={`https://www.youtube.com/embed/${videoId}`}
-                  title={`How to replace battery in ${watch.watch_query}`}
-                  className="absolute top-0 left-0 w-full h-full"
-                  allowFullScreen
-                ></iframe>
+              <div className="flex-grow flex flex-col">
+                <div className="relative w-full aspect-video rounded-xl overflow-hidden shadow-inner bg-gray-100 mb-3 border border-gray-200">
+                  <iframe
+                    src={`https://www.youtube.com/embed/${videoId}`}
+                    title={`How to replace battery in ${watch.watch_query}`}
+                    className="absolute top-0 left-0 w-full h-full"
+                    allowFullScreen
+                  ></iframe>
+                </div>
+                {/* User-Requested Disclaimer Block */}
+                <p className="text-[11px] text-gray-500 leading-tight p-2 bg-gray-50 rounded border border-gray-100">
+                  <strong className="text-gray-700">Disclaimer:</strong> The video above is for example and general guidelines only. It may not be entirely specific to your exact model, and quality/accuracy depends on third-party availability. If in doubt, please refer to your specific watch handbook or consult a professional.
+                </p>
               </div>
             ) : (
               <div className="w-full aspect-video rounded-xl bg-gray-100 flex items-center justify-center border-2 border-dashed border-gray-300 flex-grow">
@@ -84,25 +98,20 @@ export default async function WatchPage({ params }: { params: any }) {
                  </div>
               ) : isSolar ? (
                  <div>
-                   <div className="text-4xl font-black text-green-600 mb-2 tracking-tight">Solar Capacitor</div>
-                   <p className="text-gray-600">This is a solar-powered watch. It requires a specialized rechargeable capacitor, not a standard battery.</p>
-                 </div>
-              ) : hasValidPowerModel ? (
-                 <div>
-                   <div className="text-4xl font-black text-gray-900 mb-2 tracking-tight">{powerModel}</div>
-                   <p className="text-gray-600">This watch requires a standard battery. Grab a replacement below.</p>
+                   <div className="text-4xl font-black text-green-600 mb-2 tracking-tight">{displayModelTitle}</div>
+                   <p className="text-gray-600">This is a solar-powered watch. It requires a specialized rechargeable capacitor{hasValidPowerModel ? '.' : ', not a standard battery.'}</p>
                  </div>
               ) : (
                  <div>
-                   <div className="text-4xl font-black text-gray-900 mb-2 tracking-tight">Unknown</div>
-                   <p className="text-gray-600">We are currently verifying the exact battery type for this model.</p>
+                   <div className="text-4xl font-black text-gray-900 mb-2 tracking-tight">{displayModelTitle}</div>
+                   <p className="text-gray-600">{hasValidPowerModel ? 'This watch requires a standard battery. Grab a replacement below.' : 'We are verifying the exact battery for this model. Try searching for your specific watch below.'}</p>
                  </div>
               )}
             </div>
 
-            {/* Dynamic Affiliate Link: Changes text and search query based on if it's Solar or Standard */}
-            {showPowerLink && (
-              <a href={`https://www.amazon.com/s?k=watch+${isSolar ? 'capacitor' : 'battery'}+${powerModel}`} target="_blank" rel="noopener noreferrer" 
+            {/* Affiliate Link - Shows for everything except Mechanical */}
+            {!isMechanical && (
+              <a href={`https://www.amazon.com/s?k=${encodeURIComponent(amazonSearchTerm)}`} target="_blank" rel="noopener noreferrer" 
                  className="bg-orange-500 hover:bg-orange-600 text-white rounded-2xl p-6 shadow-sm transition-transform hover:-translate-y-1 flex items-center justify-between group">
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center font-black text-xs">Power</div>
@@ -110,13 +119,13 @@ export default async function WatchPage({ params }: { params: any }) {
                     <div className="text-sm font-bold text-orange-100 mb-1">
                       Buy Replacement {isSolar ? 'Capacitor' : 'Battery'}
                     </div>
-                    <div className="text-xl font-bold">Amazon: {powerModel}</div>
+                    <div className="text-xl font-bold">Amazon: {hasValidPowerModel ? rawModel : 'Search Matches'}</div>
                   </div>
                 </div>
               </a>
             )}
 
-            {/* Toolkit - Permanently visible for every watch type */}
+            {/* Toolkit - Always Visible */}
             <a href="https://www.amazon.com/s?k=watch+repair+kit" target="_blank" rel="noopener noreferrer" 
                className="bg-gray-900 hover:bg-black text-white rounded-2xl p-6 shadow-sm transition-transform hover:-translate-y-1 flex items-center justify-between group">
               <div className="flex items-center gap-4">
