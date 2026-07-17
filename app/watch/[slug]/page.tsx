@@ -2,23 +2,30 @@ import { createClient } from '@supabase/supabase-js';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
+// This completely disables Vercel caching for this dynamic route
+export const dynamic = 'force-dynamic';
+
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 export default async function WatchPage({ params }: { params: { slug: string } }) {
-  // Query by slug instead of ID
-  const { data: watch, error } = await supabase
+  
+  // Use .limit(1) instead of .single() to prevent crashes if there are duplicate test rows
+  const { data, error } = await supabase
     .from('Watch Batteries')
     .select('*')
     .eq('slug', params.slug)
-    .single();
+    .limit(1);
+
+  // Safely grab the first result
+  const watch = data?.[0];
 
   if (error || !watch) {
+    console.error("Fetch error or missing watch:", error);
     notFound();
   }
 
-  // --- (The rest of the UI code remains exactly the same) ---
   const isMechanical = watch.power_type === 'mechanical';
   const isSolar = watch.power_type === 'solar';
   const hasBattery = !isMechanical && !isSolar && watch['Model Number'] && watch['Model Number'] !== 'N/A' && watch['Model Number'] !== 'NULL';
