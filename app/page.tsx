@@ -13,7 +13,6 @@ export default function Home() {
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [loading, setLoading] = useState(true);
 
-  // 1. Debounce the search input
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(searchTerm);
@@ -21,25 +20,19 @@ export default function Home() {
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
-  // 2. Query Supabase using our new Custom RPC Function
   useEffect(() => {
     async function fetchWatches() {
       setLoading(true);
-      
-      // Call the custom Postgres function we built in the SQL Editor
       const { data, error } = await supabase.rpc('search_watches', { 
         search_term: debouncedSearch 
       });
-      
       if (!error && data) {
         setWatches(data);
       } else if (error) {
         console.error("Search error:", error);
       }
-      
       setLoading(false);
     }
-    
     fetchWatches();
   }, [debouncedSearch]);
 
@@ -51,15 +44,23 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 font-sans">
+    <div className="min-h-screen bg-gray-50 font-sans flex flex-col">
       <header className="bg-indigo-700 text-white py-16 px-4 shadow-md">
-        <div className="max-w-4xl mx-auto text-center">
+        <div className="max-w-4xl mx-auto text-center flex flex-col items-center">
+          {/* Main SVG Logo */}
+          <div className="bg-white/10 p-4 rounded-full mb-6 border border-white/20 shadow-inner">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-indigo-100" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="7"></circle>
+              <polyline points="12 9 12 12 13.5 13.5"></polyline>
+              <path d="M16.51 17.35l-.35 3.83a2 2 0 0 1-2 1.82H9.83a2 2 0 0 1-2-1.82l-.35-3.83m.01-10.7l.35-3.83A2 2 0 0 1 9.83 1h4.35a2 2 0 0 1 2 1.82l.35 3.83"></path>
+            </svg>
+          </div>
           <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4">Watch Battery Lookup</h1>
-          <p className="text-indigo-100 text-lg md:text-xl max-w-2xl mx-auto">Quickly find exact replacement parts, battery types, and compatibility details.</p>
+          <p className="text-indigo-100 text-lg md:text-xl max-w-2xl mx-auto font-medium">The web's most comprehensive database for watch battery sizes, solar capacitors, and repair guides.</p>
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto p-4 py-8 relative z-10">
+      <main className="max-w-4xl mx-auto p-4 py-8 relative z-10 flex-grow w-full">
         <div className="bg-white rounded-xl shadow-md p-2 mb-8 border border-gray-200">
           <form onSubmit={handleSearchSubmit} className="w-full">
             <input
@@ -82,7 +83,7 @@ export default function Home() {
           )}
         </div>
 
-        <div className="min-h-[60vh] bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div className="min-h-[50vh] bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
@@ -123,6 +124,17 @@ export default function Home() {
           </div>
         </div>
       </main>
+
+      <footer className="w-full bg-white border-t border-gray-200 py-8 mt-12">
+        <div className="max-w-4xl mx-auto px-4 text-center">
+          <p className="text-sm text-gray-500 mb-2">
+            <strong>Affiliate Disclosure:</strong> As an Amazon Associate, we earn from qualifying purchases. 
+          </p>
+          <p className="text-xs text-gray-400">
+            &copy; {new Date().getFullYear()} Watch Battery Lookup. All rights reserved.
+          </p>
+        </div>
+      </footer>
     </div>
   );
 }
