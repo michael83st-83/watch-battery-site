@@ -3,7 +3,10 @@ import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Watch Battery Lookup | Exact Replacements & Repair Guides',
-  description: 'The web\'s most comprehensive database for watch battery sizes, solar capacitors, and repair guides.',
+  description: 'The web\'s most comprehensive database for watch battery types, solar capacitors, and repair guides.',
+  icons: {
+    icon: '/brand-icon.svg',
+  },
 };
 
 export default function RootLayout({

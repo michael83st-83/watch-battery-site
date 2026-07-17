@@ -58,7 +58,7 @@ export default function Home() {
             </div>
           </h1>
 
-          <p className="text-indigo-100 text-lg md:text-xl max-w-2xl mx-auto font-medium">The web's most comprehensive database for watch battery sizes, solar capacitors, and repair guides.</p>
+          <p className="text-indigo-100 text-lg md:text-xl max-w-2xl mx-auto font-medium">The web's most comprehensive database for watch battery types, solar capacitors, and repair guides.</p>
         </div>
       </header>
 
