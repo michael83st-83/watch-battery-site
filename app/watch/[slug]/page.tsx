@@ -26,9 +26,16 @@ export default async function WatchPage({ params }: { params: any }) {
     notFound();
   }
 
+  // Refined Logic Check
   const isMechanical = watch.power_type === 'mechanical';
   const isSolar = watch.power_type === 'solar';
-  const hasBattery = !isMechanical && !isSolar && watch['Model Number'] && watch['Model Number'] !== 'N/A' && watch['Model Number'] !== 'NULL';
+  const powerModel = watch['Model Number'];
+  const hasValidPowerModel = powerModel && powerModel !== 'N/A' && powerModel !== 'NULL';
+  
+  // Both standard and solar watches need a purchase link (as long as they aren't mechanical)
+  const showPowerLink = !isMechanical && hasValidPowerModel;
+
+  const videoId = watch.youtube_video_id || watch['youtube_video_id '] || null;
 
   return (
     <div className="min-h-screen bg-gray-50 font-sans flex flex-col">
@@ -49,11 +56,11 @@ export default async function WatchPage({ params }: { params: any }) {
           
           <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 flex flex-col h-full">
             <h2 className="text-xl font-bold text-gray-900 mb-4 border-b pb-2">How to Open: {watch.watch_query}</h2>
-            {/* FIX: Check for youtube_video_id instead of youtube_embed, and construct the correct iframe URL */}
-            {watch.youtube_video_id ? (
+            
+            {videoId ? (
               <div className="relative w-full aspect-video rounded-xl overflow-hidden shadow-inner bg-gray-100 flex-grow">
                 <iframe
-                  src={`https://www.youtube.com/embed/${watch.youtube_video_id}`}
+                  src={`https://www.youtube.com/embed/${videoId}`}
                   title={`How to replace battery in ${watch.watch_query}`}
                   className="absolute top-0 left-0 w-full h-full"
                   allowFullScreen
@@ -80,9 +87,9 @@ export default async function WatchPage({ params }: { params: any }) {
                    <div className="text-4xl font-black text-green-600 mb-2 tracking-tight">Solar Capacitor</div>
                    <p className="text-gray-600">This is a solar-powered watch. It requires a specialized rechargeable capacitor, not a standard battery.</p>
                  </div>
-              ) : hasBattery ? (
+              ) : hasValidPowerModel ? (
                  <div>
-                   <div className="text-4xl font-black text-gray-900 mb-2 tracking-tight">{watch['Model Number']}</div>
+                   <div className="text-4xl font-black text-gray-900 mb-2 tracking-tight">{powerModel}</div>
                    <p className="text-gray-600">This watch requires a standard battery. Grab a replacement below.</p>
                  </div>
               ) : (
@@ -93,31 +100,34 @@ export default async function WatchPage({ params }: { params: any }) {
               )}
             </div>
 
-            {hasBattery && (
-              <a href={`https://www.amazon.com/s?k=watch+battery+${watch['Model Number']}`} target="_blank" rel="noopener noreferrer" 
+            {/* Dynamic Affiliate Link: Changes text and search query based on if it's Solar or Standard */}
+            {showPowerLink && (
+              <a href={`https://www.amazon.com/s?k=watch+${isSolar ? 'capacitor' : 'battery'}+${powerModel}`} target="_blank" rel="noopener noreferrer" 
                  className="bg-orange-500 hover:bg-orange-600 text-white rounded-2xl p-6 shadow-sm transition-transform hover:-translate-y-1 flex items-center justify-between group">
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center font-black text-xs">Power</div>
                   <div>
-                    <div className="text-sm font-bold text-orange-100 mb-1">Buy Replacement Battery</div>
-                    <div className="text-xl font-bold">Amazon: {watch['Model Number']}</div>
+                    <div className="text-sm font-bold text-orange-100 mb-1">
+                      Buy Replacement {isSolar ? 'Capacitor' : 'Battery'}
+                    </div>
+                    <div className="text-xl font-bold">Amazon: {powerModel}</div>
                   </div>
                 </div>
               </a>
             )}
 
-            {!isMechanical && (
-              <a href="https://www.amazon.com/s?k=watch+repair+kit" target="_blank" rel="noopener noreferrer" 
-                 className="bg-gray-900 hover:bg-black text-white rounded-2xl p-6 shadow-sm transition-transform hover:-translate-y-1 flex items-center justify-between group">
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center font-black text-[10px] text-center leading-tight">Tool<br/>Kit</div>
-                  <div>
-                    <div className="text-sm font-bold text-gray-400 mb-1">Buy Recommended Tool</div>
-                    <div className="text-xl font-bold">Amazon: Watch Repair Kit</div>
-                  </div>
+            {/* Toolkit - Permanently visible for every watch type */}
+            <a href="https://www.amazon.com/s?k=watch+repair+kit" target="_blank" rel="noopener noreferrer" 
+               className="bg-gray-900 hover:bg-black text-white rounded-2xl p-6 shadow-sm transition-transform hover:-translate-y-1 flex items-center justify-between group">
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center font-black text-[10px] text-center leading-tight">Tool<br/>Kit</div>
+                <div>
+                  <div className="text-sm font-bold text-gray-400 mb-1">Buy Recommended Tool</div>
+                  <div className="text-xl font-bold">Amazon: Watch Repair Kit</div>
                 </div>
-              </a>
-            )}
+              </div>
+            </a>
+            
           </div>
         </div>
       </main>
