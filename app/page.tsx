@@ -47,15 +47,17 @@ export default function Home() {
     <div className="min-h-screen bg-gray-50 font-sans flex flex-col">
       <header className="bg-indigo-700 text-white py-16 px-4 shadow-md">
         <div className="max-w-4xl mx-auto text-center flex flex-col items-center">
-          {/* Main SVG Logo */}
-          <div className="bg-white/10 p-4 rounded-full mb-6 border border-white/20 shadow-inner">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-indigo-100" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="12" r="7"></circle>
-              <polyline points="12 9 12 12 13.5 13.5"></polyline>
-              <path d="M16.51 17.35l-.35 3.83a2 2 0 0 1-2 1.82H9.83a2 2 0 0 1-2-1.82l-.35-3.83m.01-10.7l.35-3.83A2 2 0 0 1 9.83 1h4.35a2 2 0 0 1 2 1.82l.35 3.83"></path>
-            </svg>
-          </div>
-          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4">Watch Battery Lookup</h1>
+          
+          {/* New Typography Brand Logo */}
+          <h1 className="flex items-center justify-center space-x-3 mb-6 select-none">
+            <div className="bg-white text-indigo-700 font-black text-3xl md:text-4xl px-3 py-1 rounded-lg shadow-lg tracking-tighter transform -rotate-2 border-b-4 border-indigo-200">
+              WB
+            </div>
+            <div className="text-4xl md:text-5xl font-extrabold tracking-tight">
+              Watch<span className="text-indigo-300 font-medium">Battery</span>
+            </div>
+          </h1>
+
           <p className="text-indigo-100 text-lg md:text-xl max-w-2xl mx-auto font-medium">The web's most comprehensive database for watch battery sizes, solar capacitors, and repair guides.</p>
         </div>
       </header>
