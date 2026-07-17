@@ -44,11 +44,10 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 font-sans flex flex-col">
+    <div className="bg-gray-50 font-sans flex flex-col">
       <header className="bg-indigo-700 text-white py-16 px-4 shadow-md">
         <div className="max-w-4xl mx-auto text-center flex flex-col items-center">
           
-          {/* Updated Typography Brand Logo */}
           <h1 className="flex items-center justify-center space-x-3 mb-6 select-none">
             <div className="bg-white text-indigo-700 font-black text-3xl md:text-4xl px-3 py-1 rounded-lg shadow-lg tracking-tighter transform -rotate-2 border-b-4 border-indigo-200">
               WBL
@@ -116,7 +115,8 @@ export default function Home() {
                         )}
                       </td>
                       <td className="p-4 text-right">
-                        <Link href={`/watch/${watch.id}`} className="inline-block bg-indigo-600 text-white py-2 px-4 rounded-lg font-bold text-xs hover:bg-indigo-700 transition-colors shadow-sm">View Details &rarr;</Link>
+                        {/* UPDATE: Linking to the new slug! */}
+                        <Link href={`/watch/${watch.slug}`} className="inline-block bg-indigo-600 text-white py-2 px-4 rounded-lg font-bold text-xs hover:bg-indigo-700 transition-colors shadow-sm">View Details &rarr;</Link>
                       </td>
                     </tr>
                   ))
@@ -126,22 +126,6 @@ export default function Home() {
           </div>
         </div>
       </main>
-
-      <footer className="w-full bg-white border-t border-gray-200 py-8 mt-12">
-        <div className="max-w-4xl mx-auto px-4 text-center">
-          <p className="text-sm text-gray-500 mb-4">
-            <strong>Affiliate Disclosure:</strong> As an Amazon Associate, we earn from qualifying purchases. 
-          </p>
-          <div className="flex justify-center space-x-4 mb-4">
-            <Link href="/disclaimer" className="text-xs font-bold text-indigo-600 hover:text-indigo-800 transition-colors uppercase tracking-wider">
-              Legal Disclaimer & Privacy
-            </Link>
-          </div>
-          <p className="text-xs text-gray-400">
-            &copy; {new Date().getFullYear()} Watch Battery Lookup. All rights reserved.
-          </p>
-        </div>
-      </footer>
     </div>
   );
 }

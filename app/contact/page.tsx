@@ -24,8 +24,8 @@ export default function Contact() {
         
         <div className="inline-block bg-indigo-50 border border-indigo-100 rounded-lg p-6">
           <p className="text-sm font-bold text-indigo-800 uppercase tracking-wider mb-2">Email Us At</p>
-          <a href="mailto:hello@watchbatterylookup.com" className="text-xl font-medium text-indigo-600 hover:text-indigo-800 transition-colors">
-            hello@watchbatterylookup.com
+          <a href="mailto:contact@watchbatterylookup.com" className="text-xl font-medium text-indigo-600 hover:text-indigo-800 transition-colors">
+            contact@watchbatterylookup.com
           </a>
         </div>
       </main>
