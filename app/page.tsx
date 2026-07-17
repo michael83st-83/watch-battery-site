@@ -129,9 +129,14 @@ export default function Home() {
 
       <footer className="w-full bg-white border-t border-gray-200 py-8 mt-12">
         <div className="max-w-4xl mx-auto px-4 text-center">
-          <p className="text-sm text-gray-500 mb-2">
+          <p className="text-sm text-gray-500 mb-4">
             <strong>Affiliate Disclosure:</strong> As an Amazon Associate, we earn from qualifying purchases. 
           </p>
+          <div className="flex justify-center space-x-4 mb-4">
+            <Link href="/disclaimer" className="text-xs font-bold text-indigo-600 hover:text-indigo-800 transition-colors uppercase tracking-wider">
+              Legal Disclaimer & Privacy
+            </Link>
+          </div>
           <p className="text-xs text-gray-400">
             &copy; {new Date().getFullYear()} Watch Battery Lookup. All rights reserved.
           </p>
