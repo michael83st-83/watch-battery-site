@@ -48,13 +48,13 @@ export default function Home() {
       <header className="bg-indigo-700 text-white py-16 px-4 shadow-md">
         <div className="max-w-4xl mx-auto text-center flex flex-col items-center">
           
-          {/* New Typography Brand Logo */}
+          {/* Updated Typography Brand Logo */}
           <h1 className="flex items-center justify-center space-x-3 mb-6 select-none">
             <div className="bg-white text-indigo-700 font-black text-3xl md:text-4xl px-3 py-1 rounded-lg shadow-lg tracking-tighter transform -rotate-2 border-b-4 border-indigo-200">
-              WB
+              WBL
             </div>
             <div className="text-4xl md:text-5xl font-extrabold tracking-tight">
-              Watch<span className="text-indigo-300 font-medium">Battery</span>
+              Watch <span className="text-indigo-300">Battery</span> Lookup
             </div>
           </h1>
 
