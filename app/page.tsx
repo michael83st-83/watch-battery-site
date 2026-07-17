@@ -13,7 +13,7 @@ export default function Home() {
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [loading, setLoading] = useState(true);
 
-  // 1. Debounce the search input (Wait 400ms after they stop typing)
+  // 1. Debounce the search input
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(searchTerm);
@@ -21,29 +21,22 @@ export default function Home() {
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
-  // 2. Query Supabase directly whenever the debounced search changes
+  // 2. Query Supabase using our new Custom RPC Function
   useEffect(() => {
     async function fetchWatches() {
       setLoading(true);
       
-      // Start the query, strictly limiting to 50 results to protect memory
-      let query = supabase
-        .from('Watch Batteries')
-        .select('*')
-        .limit(50); 
-
-      // If they typed something, search both watch names and battery models
-      if (debouncedSearch) {
-        query = query.or(`watch_query.ilike.%${debouncedSearch}%,Model Number.ilike.%${debouncedSearch}%`);
-      } else {
-        query = query.order('watch_query', { ascending: true });
-      }
-
-      const { data, error } = await query;
+      // Call the custom Postgres function we built in the SQL Editor
+      const { data, error } = await supabase.rpc('search_watches', { 
+        search_term: debouncedSearch 
+      });
       
       if (!error && data) {
         setWatches(data);
+      } else if (error) {
+        console.error("Search error:", error);
       }
+      
       setLoading(false);
     }
     
@@ -71,6 +64,7 @@ export default function Home() {
           <form onSubmit={handleSearchSubmit} className="w-full">
             <input
               type="search"
+              spellCheck="false" 
               placeholder="Search by watch model or battery type (e.g., Seiko Prospex, SR927W)..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
