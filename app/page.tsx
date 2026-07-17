@@ -10,26 +10,46 @@ const supabase = createClient(supabaseUrl, supabaseAnonKey);
 export default function Home() {
   const [watches, setWatches] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [loading, setLoading] = useState(true);
 
+  // 1. Debounce the search input (Wait 400ms after they stop typing)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchTerm);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  // 2. Query Supabase directly whenever the debounced search changes
   useEffect(() => {
     async function fetchWatches() {
-      const { data, error } = await supabase
+      setLoading(true);
+      
+      // Start the query, strictly limiting to 50 results to protect memory
+      let query = supabase
         .from('Watch Batteries')
         .select('*')
-        .order('watch_query', { ascending: true });
-      if (!error && data) setWatches(data);
+        .limit(50); 
+
+      // If they typed something, search both watch names and battery models
+      if (debouncedSearch) {
+        query = query.or(`watch_query.ilike.%${debouncedSearch}%,Model Number.ilike.%${debouncedSearch}%`);
+      } else {
+        query = query.order('watch_query', { ascending: true });
+      }
+
+      const { data, error } = await query;
+      
+      if (!error && data) {
+        setWatches(data);
+      }
       setLoading(false);
     }
+    
     fetchWatches();
-  }, []);
+  }, [debouncedSearch]);
 
-  const filteredWatches = watches.filter(watch => 
-    watch.watch_query.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (watch['Model Number'] && watch['Model Number'].toLowerCase().includes(searchTerm.toLowerCase()))
-  );
-
-  // Magic function to hide the mobile keyboard on "Enter" or "Search"
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (document.activeElement instanceof HTMLElement) {
@@ -58,7 +78,16 @@ export default function Home() {
             />
           </form>
         </div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-4 px-2">Watch Database</h2>
+        
+        <div className="flex justify-between items-end mb-4 px-2">
+          <h2 className="text-2xl font-bold text-gray-900">Watch Database</h2>
+          {debouncedSearch && watches.length === 50 && (
+            <span className="text-xs font-bold text-amber-600 bg-amber-50 px-3 py-1 rounded-full border border-amber-200">
+              Showing top 50 results
+            </span>
+          )}
+        </div>
+
         <div className="min-h-[60vh] bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
@@ -71,11 +100,11 @@ export default function Home() {
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {loading ? (
-                  <tr><td colSpan={3} className="p-8 text-center text-gray-500">Loading database...</td></tr>
-                ) : filteredWatches.length === 0 ? (
-                  <tr><td colSpan={3} className="p-8 text-center text-gray-500">No watches found matching &quot;{searchTerm}&quot;</td></tr>
+                  <tr><td colSpan={3} className="p-8 text-center text-gray-500 font-medium">Searching database...</td></tr>
+                ) : watches.length === 0 ? (
+                  <tr><td colSpan={3} className="p-8 text-center text-gray-500">No watches found matching &quot;{debouncedSearch}&quot;</td></tr>
                 ) : (
-                  filteredWatches.map((watch) => (
+                  watches.map((watch) => (
                     <tr key={watch.id} className="hover:bg-gray-50 transition-colors">
                       <td className="p-4"><div className="text-sm font-bold text-gray-900">{watch.watch_query}</div></td>
                       <td className="p-4 text-sm hidden sm:table-cell">
