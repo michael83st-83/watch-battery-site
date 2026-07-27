@@ -7,17 +7,16 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  // 1. Fixed the base URL to match your live domain
   const baseUrl = 'https://watchbatterylookup.com';
 
-  // 2. Fetch all watches from your database using the slug
+  // 1. Fetch only watches that have a successfully generated slug
   const { data: watches, error } = await supabase
     .from('Watch Batteries')
-    .select('slug, created_at');
+    .select('slug, created_at')
+    .not('slug', 'is', null); // <-- This prevents the 'null' URL error!
 
   if (error || !watches) {
     console.error('Error fetching sitemap data:', error);
-    // Fallback to just the homepage if database fetch fails
     return [
       {
         url: baseUrl,
@@ -28,15 +27,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ];
   }
 
-  // 3. Map the database rows to the proper URL structure using the slug
-  const watchUrls = watches.map((watch) => ({
-    url: `${baseUrl}/watch/${watch.slug}`,
-    lastModified: new Date(watch.created_at || new Date()),
-    changeFrequency: 'monthly' as const,
-    priority: 0.8,
-  }));
+  // 2. Map the valid database rows
+  const watchUrls = watches
+    .filter(watch => watch.slug && watch.slug.trim() !== '') // Double-check safety net
+    .map((watch) => ({
+      url: `${baseUrl}/watch/${watch.slug}`,
+      lastModified: new Date(watch.created_at || new Date()),
+      changeFrequency: 'monthly' as const,
+      priority: 0.8,
+    }));
 
-  // 4. Return the homepage plus all dynamic watch URLs
+  // 3. Return the clean sitemap list
   return [
     {
       url: baseUrl,
