@@ -109,13 +109,15 @@ export default function Home() {
                     <tr key={watch.id} className="hover:bg-gray-50 transition-colors">
                       <td className="p-4"><div className="text-sm font-bold text-gray-900">{watch.watch_query}</div></td>
                       <td className="p-4 text-sm hidden sm:table-cell">
-                        {watch.power_type === 'mechanical' ? (
+                        {watch.power_type === 'automatic' || watch.power_type === 'mechanical' ? (
                           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">Mechanical</span>
+                        ) : watch.power_type === 'smartwatch' ? (
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">Smartwatch</span>
                         ) : watch.power_type === 'solar' ? (
                           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Solar</span>
                         ) : (
                           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                            {watch['Model Number'] && watch['Model Number'] !== 'N/A' && watch['Model Number'] !== 'NULL' ? watch['Model Number'] : 'Battery'}
+                            {watch['Model Number'] && watch['Model Number'] !== 'N/A' && watch['Model Number'] !== 'NULL' && watch['Model Number'].trim() !== '' ? watch['Model Number'] : 'Battery'}
                           </span>
                         )}
                       </td>
