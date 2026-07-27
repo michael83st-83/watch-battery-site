@@ -26,7 +26,9 @@ export default async function WatchPage({ params }: { params: any }) {
     notFound();
   }
 
-  const isMechanical = watch.power_type === 'mechanical';
+  // Updated logic to check for the new power types
+  const isAutomatic = watch.power_type === 'automatic' || watch.power_type === 'mechanical';
+  const isSmartwatch = watch.power_type === 'smartwatch';
   const isSolar = watch.power_type === 'solar';
   const rawModel = watch['Model Number'];
   
@@ -45,7 +47,6 @@ export default async function WatchPage({ params }: { params: any }) {
   return (
     <div className="min-h-screen bg-gray-50 font-sans flex flex-col">
       <header className="bg-indigo-700 text-white py-8 md:py-12 px-4 shadow-md">
-        {/* MOBILE FIX: Separated the back button from the flex layout so it stays top-left */}
         <div className="max-w-4xl mx-auto">
           <Link href="/" className="inline-block mb-6 text-indigo-200 hover:text-white transition-colors text-sm font-bold tracking-wider">&larr; Back to Search</Link>
           
@@ -63,40 +64,46 @@ export default async function WatchPage({ params }: { params: any }) {
       <main className="max-w-4xl mx-auto p-4 py-8 w-full flex-grow relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           
-          {/* MOBILE FIX: Added order-2 md:order-1. This puts the video on the bottom on mobile, but keeps it on the left on desktop. */}
-          <div className="order-2 md:order-1 bg-white rounded-2xl shadow-sm border border-gray-200 p-6 flex flex-col h-full">
-            <h2 className="text-xl font-bold text-gray-900 mb-4 border-b pb-2">How to Open: {watch.watch_query}</h2>
-            
-            {videoId ? (
-              <div className="flex-grow flex flex-col">
-                <div className="relative w-full aspect-video rounded-xl overflow-hidden shadow-inner bg-gray-100 mb-3 border border-gray-200">
-                  <iframe
-                    src={`https://www.youtube.com/embed/${videoId}`}
-                    title={`How to replace battery in ${watch.watch_query}`}
-                    className="absolute top-0 left-0 w-full h-full"
-                    allowFullScreen
-                  ></iframe>
+          {/* Hide the YouTube section completely if it is a smartwatch */}
+          {!isSmartwatch && (
+            <div className="order-2 md:order-1 bg-white rounded-2xl shadow-sm border border-gray-200 p-6 flex flex-col h-full">
+              <h2 className="text-xl font-bold text-gray-900 mb-4 border-b pb-2">How to Open: {watch.watch_query}</h2>
+              
+              {videoId ? (
+                <div className="flex-grow flex flex-col">
+                  <div className="relative w-full aspect-video rounded-xl overflow-hidden shadow-inner bg-gray-100 mb-3 border border-gray-200">
+                    <iframe
+                      src={`https://www.youtube.com/embed/${videoId}`}
+                      title={`How to replace battery in ${watch.watch_query}`}
+                      className="absolute top-0 left-0 w-full h-full"
+                      allowFullScreen
+                    ></iframe>
+                  </div>
+                  <p className="text-[11px] text-gray-500 leading-tight p-2 bg-gray-50 rounded border border-gray-100">
+                    <strong className="text-gray-700">Disclaimer:</strong> The video above is for example and general guidelines only. It may not be entirely specific to your exact model, and quality/accuracy depends on third-party availability. If in doubt, please refer to your specific watch handbook or consult a professional.
+                  </p>
                 </div>
-                <p className="text-[11px] text-gray-500 leading-tight p-2 bg-gray-50 rounded border border-gray-100">
-                  <strong className="text-gray-700">Disclaimer:</strong> The video above is for example and general guidelines only. It may not be entirely specific to your exact model, and quality/accuracy depends on third-party availability. If in doubt, please refer to your specific watch handbook or consult a professional.
-                </p>
-              </div>
-            ) : (
-              <div className="w-full aspect-video rounded-xl bg-gray-100 flex items-center justify-center border-2 border-dashed border-gray-300 flex-grow">
-                <p className="text-gray-500 font-medium">Repair video coming soon.</p>
-              </div>
-            )}
-          </div>
+              ) : (
+                <div className="w-full aspect-video rounded-xl bg-gray-100 flex items-center justify-center border-2 border-dashed border-gray-300 flex-grow">
+                  <p className="text-gray-500 font-medium">Repair video coming soon.</p>
+                </div>
+              )}
+            </div>
+          )}
 
-          {/* MOBILE FIX: Added order-1 md:order-2. This puts the Power Info & CTAs at the very top on mobile. */}
           <div className="order-1 md:order-2 flex flex-col gap-6">
             <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
               <h2 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Required Power Source</h2>
               
-              {isMechanical ? (
+              {isAutomatic ? (
                  <div>
                    <div className="text-3xl md:text-4xl font-black text-gray-900 mb-2 tracking-tight">Mechanical</div>
                    <p className="text-sm md:text-base text-gray-600">This watch uses an automatic or hand-wound mechanical movement. It does not require a battery.</p>
+                 </div>
+              ) : isSmartwatch ? (
+                 <div>
+                   <div className="text-3xl md:text-4xl font-black text-indigo-600 mb-2 tracking-tight">Smartwatch</div>
+                   <p className="text-sm md:text-base text-gray-600">This smartwatch requires a magnetic charging dock or cable.</p>
                  </div>
               ) : isSolar ? (
                  <div>
@@ -111,7 +118,24 @@ export default async function WatchPage({ params }: { params: any }) {
               )}
             </div>
 
-            {!isMechanical && (
+            {/* Smartwatch Charger CTA */}
+            {isSmartwatch && (
+              <a href={`https://www.amazon.com/s?k=${encodeURIComponent(watch.watch_query + ' charger')}`} target="_blank" rel="noopener noreferrer" 
+                 className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl p-6 shadow-sm transition-transform hover:-translate-y-1 flex items-center justify-between group">
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center font-black text-[10px]">Power</div>
+                  <div>
+                    <div className="text-sm font-bold text-indigo-200 mb-1">
+                      Buy Compatible Charger
+                    </div>
+                    <div className="text-lg md:text-xl font-bold">Amazon: Search Matches</div>
+                  </div>
+                </div>
+              </a>
+            )}
+
+            {/* Standard Battery/Capacitor CTA */}
+            {!isAutomatic && !isSmartwatch && (
               <a href={`https://www.amazon.com/s?k=${encodeURIComponent(amazonSearchTerm)}`} target="_blank" rel="noopener noreferrer" 
                  className="bg-orange-500 hover:bg-orange-600 text-white rounded-2xl p-6 shadow-sm transition-transform hover:-translate-y-1 flex items-center justify-between group">
                 <div className="flex items-center gap-4">
@@ -126,16 +150,33 @@ export default async function WatchPage({ params }: { params: any }) {
               </a>
             )}
 
-            <a href="https://www.amazon.com/s?k=watch+repair+kit" target="_blank" rel="noopener noreferrer" 
-               className="bg-gray-900 hover:bg-black text-white rounded-2xl p-6 shadow-sm transition-transform hover:-translate-y-1 flex items-center justify-between group">
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center font-black text-[10px] text-center leading-tight">Tool<br/>Kit</div>
-                <div>
-                  <div className="text-sm font-bold text-gray-400 mb-1">Buy Recommended Tool</div>
-                  <div className="text-lg md:text-xl font-bold">Amazon: Watch Repair Kit</div>
+            {/* Automatic Watch Winder CTA */}
+            {isAutomatic && (
+              <a href="https://www.amazon.com/s?k=automatic+watch+winder" target="_blank" rel="noopener noreferrer" 
+                 className="bg-gray-900 hover:bg-black text-white rounded-2xl p-6 shadow-sm transition-transform hover:-translate-y-1 flex items-center justify-between group">
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center font-black text-[10px] text-center leading-tight">Winder</div>
+                  <div>
+                    <div className="text-sm font-bold text-gray-400 mb-1">Buy Recommended Accessory</div>
+                    <div className="text-lg md:text-xl font-bold">Amazon: Watch Winder</div>
+                  </div>
                 </div>
-              </div>
-            </a>
+              </a>
+            )}
+
+            {/* Tool Kit CTA (Hidden for smartwatches and automatics) */}
+            {!isAutomatic && !isSmartwatch && (
+              <a href="https://www.amazon.com/s?k=watch+repair+kit" target="_blank" rel="noopener noreferrer" 
+                 className="bg-gray-900 hover:bg-black text-white rounded-2xl p-6 shadow-sm transition-transform hover:-translate-y-1 flex items-center justify-between group">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-10 bg-white/20 rounded-full flex items-center justify-center font-black text-[10px] px-1">Tool Kit</div>
+                  <div>
+                    <div className="text-sm font-bold text-gray-400 mb-1">Buy Recommended Tool</div>
+                    <div className="text-lg md:text-xl font-bold">Amazon: Watch Repair Kit</div>
+                  </div>
+                </div>
+              </a>
+            )}
             
           </div>
         </div>
