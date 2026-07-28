@@ -44,6 +44,25 @@ export default async function WatchPage({ params }: { params: any }) {
 
   const videoId = watch.youtube_video_id || watch['youtube_video_id '] || null;
 
+  // Helper function to render dynamic, category-specific video section headings
+  const getVideoTitle = () => {
+    const power = (watch.power_type || '').toLowerCase();
+
+    if (power.includes('mechanical') || power.includes('automatic') || power.includes('hand')) {
+      return `${watch.watch_query} Informational Guide & Review`;
+    } 
+    
+    if (power.includes('solar') || power.includes('eco-drive') || power.includes('eco')) {
+      return `${watch.watch_query} Solar Setup & Maintenance Guide`;
+    } 
+    
+    if (power.includes('smart') || power.includes('digital') || power.includes('connected')) {
+      return `How to Setup and Use Your ${watch.watch_query}`;
+    } 
+    
+    return `How to Open: ${watch.watch_query}`;
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 font-sans flex flex-col">
       <header className="bg-indigo-700 text-white py-8 md:py-12 px-4 shadow-md">
@@ -67,14 +86,14 @@ export default async function WatchPage({ params }: { params: any }) {
           {/* Hide the YouTube section completely if it is a smartwatch */}
           {!isSmartwatch && (
             <div className="order-2 md:order-1 bg-white rounded-2xl shadow-sm border border-gray-200 p-6 flex flex-col h-full">
-              <h2 className="text-xl font-bold text-gray-900 mb-4 border-b pb-2">How to Open: {watch.watch_query}</h2>
+              <h2 className="text-xl font-bold text-gray-900 mb-4 border-b pb-2">{getVideoTitle()}</h2>
               
               {videoId ? (
                 <div className="flex-grow flex flex-col">
                   <div className="relative w-full aspect-video rounded-xl overflow-hidden shadow-inner bg-gray-100 mb-3 border border-gray-200">
                     <iframe
                       src={`https://www.youtube.com/embed/${videoId}`}
-                      title={`How to replace battery in ${watch.watch_query}`}
+                      title={`Video guide for ${watch.watch_query}`}
                       className="absolute top-0 left-0 w-full h-full"
                       allowFullScreen
                     ></iframe>
