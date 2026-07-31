@@ -26,7 +26,7 @@ export default async function WatchPage({ params }: { params: any }) {
     notFound();
   }
 
-  // Updated logic to check for the new power types
+  // Updated logic to check for power types
   const isAutomatic = watch.power_type === 'automatic' || watch.power_type === 'mechanical';
   const isSmartwatch = watch.power_type === 'smartwatch';
   const isSolar = watch.power_type === 'solar';
@@ -83,7 +83,7 @@ export default async function WatchPage({ params }: { params: any }) {
       <main className="max-w-4xl mx-auto p-4 py-8 w-full flex-grow relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           
-          {/* Hide the YouTube section completely if it is a smartwatch */}
+          {/* Hide YouTube/Fallback section completely if it is a smartwatch */}
           {!isSmartwatch && (
             <div className="order-2 md:order-1 bg-white rounded-2xl shadow-sm border border-gray-200 p-6 flex flex-col h-full">
               
@@ -104,22 +104,42 @@ export default async function WatchPage({ params }: { params: any }) {
                   </p>
                 </div>
               ) : (
-                // Video is Missing: Show the Winder Banner Block
+                // Video is Missing: Dynamic Fallback Banner Based on Watch Type
                 <div className="flex-grow flex flex-col justify-center text-center bg-gray-50 border border-gray-200 rounded-xl p-6">
                   <div className="w-16 h-16 mx-auto bg-gray-200 rounded-full flex items-center justify-center mb-4">
-                    <span className="text-2xl">🔄</span>
+                    <span className="text-2xl">{isSolar ? '☀️' : isAutomatic ? '🔄' : '🧰'}</span>
                   </div>
-                  <h3 className="text-lg font-bold text-gray-900 mb-2">Protect Your Timepiece</h3>
+                  <h3 className="text-lg font-bold text-gray-900 mb-2">
+                    {isSolar 
+                      ? 'Solar Watch Accessories' 
+                      : isAutomatic 
+                      ? 'Protect Your Timepiece' 
+                      : 'Watch Maintenance & Tools'}
+                  </h3>
                   <p className="text-sm text-gray-500 mb-6">
-                    Keep your luxury automatic watch running perfectly with a premium watch winder.
+                    {isSolar 
+                      ? 'Keep your solar watch charged with specialized solar watch lamps and chargers.' 
+                      : isAutomatic 
+                      ? 'Keep your luxury automatic watch running perfectly with a premium watch winder.' 
+                      : 'Open watch backs safely and replace batteries at home with precision tool kits.'}
                   </p>
                   <a 
-                    href="https://www.amazon.com/s?k=automatic+watch+winder" 
+                    href={
+                      isSolar 
+                        ? 'https://www.amazon.com/s?k=solar+watch+charger+lamp' 
+                        : isAutomatic 
+                        ? 'https://www.amazon.com/s?k=automatic+watch+winder' 
+                        : 'https://www.amazon.com/s?k=watch+repair+kit'
+                    } 
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="inline-block bg-gray-900 text-white font-bold py-3 px-6 rounded-lg hover:bg-black transition-colors"
                   >
-                    View Recommended Winders
+                    {isSolar 
+                      ? 'View Solar Accessories' 
+                      : isAutomatic 
+                      ? 'View Recommended Winders' 
+                      : 'View Repair Tool Kits'}
                   </a>
                 </div>
               )}
