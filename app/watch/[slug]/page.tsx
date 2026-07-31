@@ -26,7 +26,6 @@ export default async function WatchPage({ params }: { params: any }) {
     notFound();
   }
 
-  // Updated logic to check for power types
   const isAutomatic = watch.power_type === 'automatic' || watch.power_type === 'mechanical';
   const isSmartwatch = watch.power_type === 'smartwatch';
   const isSolar = watch.power_type === 'solar';
@@ -44,7 +43,6 @@ export default async function WatchPage({ params }: { params: any }) {
 
   const videoId = watch.youtube_video_id || watch['youtube_video_id '] || null;
 
-  // Helper function to render dynamic, category-specific video section headings
   const getVideoTitle = () => {
     const power = (watch.power_type || '').toLowerCase();
 
@@ -83,68 +81,71 @@ export default async function WatchPage({ params }: { params: any }) {
       <main className="max-w-4xl mx-auto p-4 py-8 w-full flex-grow relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           
-          {/* Hide YouTube/Fallback section completely if it is a smartwatch */}
-          {!isSmartwatch && (
-            <div className="order-2 md:order-1 bg-white rounded-2xl shadow-sm border border-gray-200 p-6 flex flex-col h-full">
-              
-              {videoId && videoId !== 'NULL' && videoId !== 'NOT_FOUND' ? (
-                // Video Exists: Show the video player block
-                <div className="flex-grow flex flex-col">
-                  <h2 className="text-xl font-bold text-gray-900 mb-4 border-b pb-2">{getVideoTitle()}</h2>
-                  <div className="relative w-full aspect-video rounded-xl overflow-hidden shadow-inner bg-gray-100 mb-3 border border-gray-200">
-                    <iframe
-                      src={`https://www.youtube.com/embed/${videoId}`}
-                      title={`Video guide for ${watch.watch_query}`}
-                      className="absolute top-0 left-0 w-full h-full"
-                      allowFullScreen
-                    ></iframe>
-                  </div>
-                  <p className="text-[11px] text-gray-500 leading-tight p-2 bg-gray-50 rounded border border-gray-100 mt-auto">
-                    <strong className="text-gray-700">Disclaimer:</strong> The video above is for example and general guidelines only. It may not be entirely specific to your exact model, and quality/accuracy depends on third-party availability. If in doubt, please refer to your specific watch handbook or consult a professional.
-                  </p>
+          <div className="order-2 md:order-1 bg-white rounded-2xl shadow-sm border border-gray-200 p-6 flex flex-col h-full">
+            
+            {videoId && videoId !== 'NULL' && videoId !== 'NOT_FOUND' ? (
+              <div className="flex-grow flex flex-col">
+                <h2 className="text-xl font-bold text-gray-900 mb-4 border-b pb-2">{getVideoTitle()}</h2>
+                <div className="relative w-full aspect-video rounded-xl overflow-hidden shadow-inner bg-gray-100 mb-3 border border-gray-200">
+                  <iframe
+                    src={`https://www.youtube.com/embed/${videoId}`}
+                    title={`Video guide for ${watch.watch_query}`}
+                    className="absolute top-0 left-0 w-full h-full"
+                    allowFullScreen
+                  ></iframe>
                 </div>
-              ) : (
-                // Video is Missing: Dynamic Fallback Banner Based on Watch Type
-                <div className="flex-grow flex flex-col justify-center text-center bg-gray-50 border border-gray-200 rounded-xl p-6">
-                  <div className="w-16 h-16 mx-auto bg-gray-200 rounded-full flex items-center justify-center mb-4">
-                    <span className="text-2xl">{isSolar ? '☀️' : isAutomatic ? '🔄' : '🧰'}</span>
-                  </div>
-                  <h3 className="text-lg font-bold text-gray-900 mb-2">
-                    {isSolar 
-                      ? 'Solar Watch Accessories' 
-                      : isAutomatic 
-                      ? 'Protect Your Timepiece' 
-                      : 'Watch Maintenance & Tools'}
-                  </h3>
-                  <p className="text-sm text-gray-500 mb-6">
-                    {isSolar 
-                      ? 'Keep your solar watch charged with specialized solar watch lamps and chargers.' 
-                      : isAutomatic 
-                      ? 'Keep your luxury automatic watch running perfectly with a premium watch winder.' 
-                      : 'Open watch backs safely and replace batteries at home with precision tool kits.'}
-                  </p>
-                  <a 
-                    href={
-                      isSolar 
-                        ? 'https://www.amazon.com/s?k=solar+watch+charger+lamp' 
-                        : isAutomatic 
-                        ? 'https://www.amazon.com/s?k=automatic+watch+winder' 
-                        : 'https://www.amazon.com/s?k=watch+repair+kit'
-                    } 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="inline-block bg-gray-900 text-white font-bold py-3 px-6 rounded-lg hover:bg-black transition-colors"
-                  >
-                    {isSolar 
-                      ? 'View Solar Accessories' 
-                      : isAutomatic 
-                      ? 'View Recommended Winders' 
-                      : 'View Repair Tool Kits'}
-                  </a>
+                <p className="text-[11px] text-gray-500 leading-tight p-2 bg-gray-50 rounded border border-gray-100 mt-auto">
+                  <strong className="text-gray-700">Disclaimer:</strong> The video above is for example and general guidelines only. It may not be entirely specific to your exact model, and quality/accuracy depends on third-party availability. If in doubt, please refer to your specific watch handbook or consult a professional.
+                </p>
+              </div>
+            ) : (
+              <div className="flex-grow flex flex-col justify-center text-center bg-gray-50 border border-gray-200 rounded-xl p-6">
+                <div className="w-16 h-16 mx-auto bg-gray-200 rounded-full flex items-center justify-center mb-4">
+                  <span className="text-2xl">{isSmartwatch ? '🔋' : isSolar ? '☀️' : isAutomatic ? '🔄' : '🧰'}</span>
                 </div>
-              )}
-            </div>
-          )}
+                <h3 className="text-lg font-bold text-gray-900 mb-2">
+                  {isSmartwatch 
+                    ? 'Premium Charging Docks'
+                    : isSolar 
+                    ? 'Solar Watch Accessories' 
+                    : isAutomatic 
+                    ? 'Protect Your Timepiece' 
+                    : 'Watch Maintenance & Tools'}
+                </h3>
+                <p className="text-sm text-gray-500 mb-6">
+                  {isSmartwatch
+                    ? 'Organize your nightstand and keep your smartwatch powered with a sleek charging station.'
+                    : isSolar 
+                    ? 'Keep your solar watch charged with specialized solar watch lamps and chargers.' 
+                    : isAutomatic 
+                    ? 'Keep your luxury automatic watch running perfectly with a premium watch winder.' 
+                    : 'Open watch backs safely and replace batteries at home with precision tool kits.'}
+                </p>
+                <a 
+                  href={
+                    isSmartwatch
+                      ? 'https://www.amazon.com/s?k=smartwatch+charging+stand'
+                      : isSolar 
+                      ? 'https://www.amazon.com/s?k=solar+watch+charger+lamp' 
+                      : isAutomatic 
+                      ? 'https://www.amazon.com/s?k=automatic+watch+winder' 
+                      : 'https://www.amazon.com/s?k=watch+repair+kit'
+                  } 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="inline-block bg-gray-900 text-white font-bold py-3 px-6 rounded-lg hover:bg-black transition-colors"
+                >
+                  {isSmartwatch
+                    ? 'View Charging Stations'
+                    : isSolar 
+                    ? 'View Solar Accessories' 
+                    : isAutomatic 
+                    ? 'View Recommended Winders' 
+                    : 'View Repair Tool Kits'}
+                </a>
+              </div>
+            )}
+          </div>
 
           <div className="order-1 md:order-2 flex flex-col gap-6">
             <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
@@ -173,7 +174,6 @@ export default async function WatchPage({ params }: { params: any }) {
               )}
             </div>
 
-            {/* Smartwatch Charger CTA */}
             {isSmartwatch && (
               <a href={`https://www.amazon.com/s?k=${encodeURIComponent(watch.watch_query + ' charger')}`} target="_blank" rel="noopener noreferrer" 
                  className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl p-6 shadow-sm transition-transform hover:-translate-y-1 flex items-center justify-between group">
@@ -189,7 +189,6 @@ export default async function WatchPage({ params }: { params: any }) {
               </a>
             )}
 
-            {/* Standard Battery/Capacitor CTA */}
             {!isAutomatic && !isSmartwatch && (
               <a href={`https://www.amazon.com/s?k=${encodeURIComponent(amazonSearchTerm)}`} target="_blank" rel="noopener noreferrer" 
                  className="bg-orange-500 hover:bg-orange-600 text-white rounded-2xl p-6 shadow-sm transition-transform hover:-translate-y-1 flex items-center justify-between group">
@@ -205,7 +204,6 @@ export default async function WatchPage({ params }: { params: any }) {
               </a>
             )}
 
-            {/* Automatic Watch Winder CTA */}
             {isAutomatic && (
               <a href="https://www.amazon.com/s?k=automatic+watch+winder" target="_blank" rel="noopener noreferrer" 
                  className="bg-gray-900 hover:bg-black text-white rounded-2xl p-6 shadow-sm transition-transform hover:-translate-y-1 flex items-center justify-between group">
@@ -219,7 +217,6 @@ export default async function WatchPage({ params }: { params: any }) {
               </a>
             )}
 
-            {/* Tool Kit CTA (Hidden for smartwatches and automatics) */}
             {!isAutomatic && !isSmartwatch && (
               <a href="https://www.amazon.com/s?k=watch+repair+kit" target="_blank" rel="noopener noreferrer" 
                  className="bg-gray-900 hover:bg-black text-white rounded-2xl p-6 shadow-sm transition-transform hover:-translate-y-1 flex items-center justify-between group">
