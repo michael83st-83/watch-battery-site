@@ -86,10 +86,11 @@ export default async function WatchPage({ params }: { params: any }) {
           {/* Hide the YouTube section completely if it is a smartwatch */}
           {!isSmartwatch && (
             <div className="order-2 md:order-1 bg-white rounded-2xl shadow-sm border border-gray-200 p-6 flex flex-col h-full">
-              <h2 className="text-xl font-bold text-gray-900 mb-4 border-b pb-2">{getVideoTitle()}</h2>
               
               {videoId && videoId !== 'NULL' && videoId !== 'NOT_FOUND' ? (
+                // Video Exists: Show the video player block
                 <div className="flex-grow flex flex-col">
+                  <h2 className="text-xl font-bold text-gray-900 mb-4 border-b pb-2">{getVideoTitle()}</h2>
                   <div className="relative w-full aspect-video rounded-xl overflow-hidden shadow-inner bg-gray-100 mb-3 border border-gray-200">
                     <iframe
                       src={`https://www.youtube.com/embed/${videoId}`}
@@ -98,13 +99,28 @@ export default async function WatchPage({ params }: { params: any }) {
                       allowFullScreen
                     ></iframe>
                   </div>
-                  <p className="text-[11px] text-gray-500 leading-tight p-2 bg-gray-50 rounded border border-gray-100">
+                  <p className="text-[11px] text-gray-500 leading-tight p-2 bg-gray-50 rounded border border-gray-100 mt-auto">
                     <strong className="text-gray-700">Disclaimer:</strong> The video above is for example and general guidelines only. It may not be entirely specific to your exact model, and quality/accuracy depends on third-party availability. If in doubt, please refer to your specific watch handbook or consult a professional.
                   </p>
                 </div>
               ) : (
-                <div className="w-full aspect-video rounded-xl bg-gray-100 flex items-center justify-center border-2 border-dashed border-gray-300 flex-grow">
-                  <p className="text-gray-500 font-medium">Repair video coming soon.</p>
+                // Video is Missing: Show the Winder Banner Block
+                <div className="flex-grow flex flex-col justify-center text-center bg-gray-50 border border-gray-200 rounded-xl p-6">
+                  <div className="w-16 h-16 mx-auto bg-gray-200 rounded-full flex items-center justify-center mb-4">
+                    <span className="text-2xl">🔄</span>
+                  </div>
+                  <h3 className="text-lg font-bold text-gray-900 mb-2">Protect Your Timepiece</h3>
+                  <p className="text-sm text-gray-500 mb-6">
+                    Keep your luxury automatic watch running perfectly with a premium watch winder.
+                  </p>
+                  <a 
+                    href="https://www.amazon.com/s?k=automatic+watch+winder" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="inline-block bg-gray-900 text-white font-bold py-3 px-6 rounded-lg hover:bg-black transition-colors"
+                  >
+                    View Recommended Winders
+                  </a>
                 </div>
               )}
             </div>
