@@ -1,50 +1,60 @@
 import { MetadataRoute } from 'next';
 import { createClient } from '@supabase/supabase-js';
 
-// Initialize Supabase client
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = 'https://watchbatterylookup.com';
+const CHUNK_SIZE = 25000; 
 
-  // 1. Fetch only watches that have a successfully generated slug
-  const { data: watches, error } = await supabase
+export async function generateSitemaps() {
+  // Added your safety checks here to only count valid slugs
+  const { count } = await supabase
+    .from('Watch Batteries')
+    .select('slug', { count: 'exact', head: true })
+    .not('slug', 'is', null)
+    .neq('slug', ''); 
+
+  const total = count || 0;
+  const sitemapCount = Math.ceil(total / CHUNK_SIZE);
+
+  return Array.from({ length: sitemapCount }).map((_, id) => ({
+    id,
+  }));
+}
+
+export default async function sitemap({ id }: { id: number }): Promise<MetadataRoute.Sitemap> {
+  const start = id * CHUNK_SIZE;
+  const end = start + CHUNK_SIZE - 1;
+
+  // Brought over your created_at fetch and the null slug filter
+  const { data: watches } = await supabase
     .from('Watch Batteries')
     .select('slug, created_at')
-    .not('slug', 'is', null); // <-- This prevents the 'null' URL error!
+    .not('slug', 'is', null)
+    .neq('slug', '')
+    .range(start, end);
 
-  if (error || !watches) {
-    console.error('Error fetching sitemap data:', error);
+  const baseUrl = 'https://watchbatterylookup.com';
+
+  const watchUrls = (watches || []).map((watch) => ({
+    url: `${baseUrl}/watch/${watch.slug}`,
+    lastModified: watch.created_at ? new Date(watch.created_at) : new Date(),
+    changeFrequency: 'monthly' as const,
+    priority: 0.8,
+  }));
+
+  if (id === 0) {
     return [
       {
         url: baseUrl,
         lastModified: new Date(),
-        changeFrequency: 'daily',
+        changeFrequency: 'daily' as const,
         priority: 1,
-      }
+      },
+      ...watchUrls,
     ];
   }
 
-  // 2. Map the valid database rows
-  const watchUrls = watches
-    .filter(watch => watch.slug && watch.slug.trim() !== '') // Double-check safety net
-    .map((watch) => ({
-      url: `${baseUrl}/watch/${watch.slug}`,
-      lastModified: new Date(watch.created_at || new Date()),
-      changeFrequency: 'monthly' as const,
-      priority: 0.8,
-    }));
-
-  // 3. Return the clean sitemap list
-  return [
-    {
-      url: baseUrl,
-      lastModified: new Date(),
-      changeFrequency: 'daily',
-      priority: 1,
-    },
-    ...watchUrls,
-  ];
+  return watchUrls;
 }
