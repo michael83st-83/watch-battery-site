@@ -1,6 +1,10 @@
 import { MetadataRoute } from 'next';
 import { createClient } from '@supabase/supabase-js';
 
+// This is the magic line. It forces Next.js to generate the sitemap on-demand 
+// rather than crashing Vercel during the static build phase.
+export const dynamic = 'force-dynamic';
+
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
@@ -15,13 +19,10 @@ export async function generateSitemaps() {
     .neq('slug', ''); 
 
   if (error) {
-    console.error('Sitemap count error during build:', error);
+    console.error('Sitemap count error:', error);
   }
 
   const total = count || 0;
-  
-  // CRITICAL FIX: Math.max ensures it ALWAYS returns at least 1 sitemap 
-  // so Next.js doesn't crash during the Vercel build.
   const sitemapCount = Math.max(1, Math.ceil(total / CHUNK_SIZE));
 
   return Array.from({ length: sitemapCount }).map((_, id) => ({
@@ -53,7 +54,6 @@ export default async function sitemap({ id }: { id: number }): Promise<MetadataR
     priority: 0.8,
   }));
 
-  // Always include the root domain in the very first chunk
   if (id === 0) {
     return [
       {
