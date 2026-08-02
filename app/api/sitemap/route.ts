@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
+// Force Vercel to NEVER statically cache this API route
+export const dynamic = 'force-dynamic';
+
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
@@ -11,7 +14,6 @@ export async function GET(request: Request) {
   const url = new URL(request.url);
   const idParam = url.searchParams.get('id');
 
-  // 1. Generate Sitemap Index
   if (!idParam) {
     const { count } = await supabase
       .from('Watch Batteries')
@@ -37,12 +39,10 @@ export async function GET(request: Request) {
     return new NextResponse(xml, {
       headers: {
         'Content-Type': 'application/xml',
-        'Cache-Control': 'public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400',
       },
     });
   }
 
-  // 2. Generate Specific URL Chunk
   const id = parseInt(idParam, 10);
   const start = id * CHUNK_SIZE;
   const end = start + CHUNK_SIZE - 1;
@@ -84,7 +84,6 @@ export async function GET(request: Request) {
   return new NextResponse(xml, {
     headers: {
       'Content-Type': 'application/xml',
-      'Cache-Control': 'public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400',
     },
   });
 }
