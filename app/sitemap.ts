@@ -8,15 +8,21 @@ const supabase = createClient(supabaseUrl, supabaseAnonKey);
 const CHUNK_SIZE = 25000; 
 
 export async function generateSitemaps() {
-  // Added your safety checks here to only count valid slugs
-  const { count } = await supabase
+  const { count, error } = await supabase
     .from('Watch Batteries')
     .select('slug', { count: 'exact', head: true })
     .not('slug', 'is', null)
     .neq('slug', ''); 
 
+  if (error) {
+    console.error('Sitemap count error during build:', error);
+  }
+
   const total = count || 0;
-  const sitemapCount = Math.ceil(total / CHUNK_SIZE);
+  
+  // CRITICAL FIX: Math.max ensures it ALWAYS returns at least 1 sitemap 
+  // so Next.js doesn't crash during the Vercel build.
+  const sitemapCount = Math.max(1, Math.ceil(total / CHUNK_SIZE));
 
   return Array.from({ length: sitemapCount }).map((_, id) => ({
     id,
@@ -27,13 +33,16 @@ export default async function sitemap({ id }: { id: number }): Promise<MetadataR
   const start = id * CHUNK_SIZE;
   const end = start + CHUNK_SIZE - 1;
 
-  // Brought over your created_at fetch and the null slug filter
-  const { data: watches } = await supabase
+  const { data: watches, error } = await supabase
     .from('Watch Batteries')
     .select('slug, created_at')
     .not('slug', 'is', null)
     .neq('slug', '')
     .range(start, end);
+
+  if (error) {
+    console.error(`Sitemap fetch error for chunk ${id}:`, error);
+  }
 
   const baseUrl = 'https://watchbatterylookup.com';
 
@@ -44,6 +53,7 @@ export default async function sitemap({ id }: { id: number }): Promise<MetadataR
     priority: 0.8,
   }));
 
+  // Always include the root domain in the very first chunk
   if (id === 0) {
     return [
       {
