@@ -13,6 +13,7 @@ const CHUNK_SIZE = 25000;
 export async function GET(request: Request) {
   const url = new URL(request.url);
   const idParam = url.searchParams.get('id');
+  const baseUrl = 'https://watchbatterylookup.com';
 
   if (!idParam) {
     const { count } = await supabase
@@ -23,14 +24,14 @@ export async function GET(request: Request) {
 
     const total = count || 0;
     const sitemapCount = Math.max(1, Math.ceil(total / CHUNK_SIZE));
-    const baseUrl = 'https://watchbatterylookup.com';
 
     let xml = `<?xml version="1.0" encoding="UTF-8"?>\n`;
     xml += `<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n`;
 
     for (let i = 0; i < sitemapCount; i++) {
       xml += `  <sitemap>\n`;
-      xml += `    <loc>${baseUrl}/sitemap.xml?id=${i}</loc>\n`;
+      // Updated to point to the new custom route name
+      xml += `    <loc>${baseUrl}/watch-sitemap.xml?id=${i}</loc>\n`;
       xml += `  </sitemap>\n`;
     }
 
@@ -53,8 +54,6 @@ export async function GET(request: Request) {
     .not('slug', 'is', null)
     .neq('slug', '')
     .range(start, end);
-
-  const baseUrl = 'https://watchbatterylookup.com';
 
   let xml = `<?xml version="1.0" encoding="UTF-8"?>\n`;
   xml += `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n`;
