@@ -18,11 +18,24 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="antialiased flex flex-col min-h-screen bg-gray-50">
+        
+        {/* GLOBAL HEADER - Navigation Menu */}
+        <header className="w-full bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
+          <div className="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
+            <Link href="/" className="font-black text-indigo-700 text-xl tracking-tight flex items-center gap-2">
+              <span className="text-2xl">⌚</span> WatchBatteryLookup
+            </Link>
+            <nav className="flex gap-4 md:gap-8 text-sm font-bold text-gray-600">
+              <Link href="/brands" className="hover:text-indigo-600 transition-colors">Brands</Link>
+            </nav>
+          </div>
+        </header>
+
         <div className="flex-grow w-full">
           {children}
         </div>
         
-        {/* GLOBAL FOOTER - Appears on every page automatically */}
+        {/* GLOBAL FOOTER */}
         <footer className="w-full bg-white border-t border-gray-200 py-8 mt-auto">
           <div className="max-w-4xl mx-auto px-4 text-center">
             <p className="text-sm text-gray-500 mb-4">

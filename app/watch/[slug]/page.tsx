@@ -45,27 +45,34 @@ export default async function WatchPage({ params }: { params: any }) {
 
   const getVideoTitle = () => {
     const power = (watch.power_type || '').toLowerCase();
-
     if (power.includes('mechanical') || power.includes('automatic') || power.includes('hand')) {
       return `${watch.watch_query} Informational Guide & Review`;
     } 
-    
     if (power.includes('solar') || power.includes('eco-drive') || power.includes('eco')) {
       return `${watch.watch_query} Solar Setup & Maintenance Guide`;
     } 
-    
     if (power.includes('smart') || power.includes('digital') || power.includes('connected')) {
       return `How to Setup and Use Your ${watch.watch_query}`;
     } 
-    
     return `Watch Review & Details: ${watch.watch_query}`;
   };
+
+  // Extract brand from query (assuming first word is the brand)
+  const brand = watch.watch_query.split(' ')[0];
+  
+  // Fetch Related Watches
+  const { data: relatedWatches } = await supabase
+    .from('Watch Batteries')
+    .select('watch_query, slug, power_type')
+    .ilike('watch_query', `${brand}%`)
+    .neq('slug', actualSlug)
+    .limit(4);
 
   return (
     <div className="min-h-screen bg-gray-50 font-sans flex flex-col">
       <header className="bg-indigo-700 text-white py-8 md:py-12 px-4 shadow-md">
         <div className="max-w-4xl mx-auto">
-          <Link href="/" className="inline-block mb-6 text-indigo-200 hover:text-white transition-colors text-sm font-bold tracking-wider">&larr; Back to Search</Link>
+          <Link href={`/brands/${brand.toLowerCase()}`} className="inline-block mb-6 text-indigo-200 hover:text-white transition-colors text-sm font-bold tracking-wider">&larr; Back to {brand}</Link>
           
           <div className="flex flex-col md:flex-row items-center md:items-start gap-4 md:gap-6 text-center md:text-left">
             <div className="w-20 h-20 md:w-24 md:h-24 bg-indigo-800 rounded-xl flex items-center justify-center shadow-inner border border-indigo-600 flex-shrink-0">
@@ -79,10 +86,21 @@ export default async function WatchPage({ params }: { params: any }) {
       </header>
 
       <main className="max-w-4xl mx-auto p-4 py-8 w-full flex-grow relative z-10">
+        
+        {/* BREADCRUMBS */}
+        <nav className="flex text-[11px] md:text-xs text-gray-500 mb-6 font-medium overflow-x-auto whitespace-nowrap pb-2" aria-label="Breadcrumb">
+          <Link href="/" className="hover:text-indigo-600">Home</Link>
+          <span className="mx-2">›</span>
+          <Link href="/brands" className="hover:text-indigo-600">Brands</Link>
+          <span className="mx-2">›</span>
+          <Link href={`/brands/${brand.toLowerCase()}`} className="hover:text-indigo-600">{brand}</Link>
+          <span className="mx-2">›</span>
+          <span className="text-gray-900 truncate">{watch.watch_query}</span>
+        </nav>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           
           <div className="order-2 md:order-1 bg-white rounded-2xl shadow-sm border border-gray-200 p-6 flex flex-col h-full">
-            
             {videoId && videoId !== 'NULL' && videoId !== 'NOT_FOUND' ? (
               <div className="flex-grow flex flex-col">
                 <h2 className="text-xl font-bold text-gray-900 mb-4 border-b pb-2">{getVideoTitle()}</h2>
@@ -232,6 +250,30 @@ export default async function WatchPage({ params }: { params: any }) {
             
           </div>
         </div>
+
+        {/* RELATED WATCHES COMPONENT */}
+        {relatedWatches && relatedWatches.length > 0 && (
+          <div className="mt-16 pt-8 border-t border-gray-200">
+            <h3 className="text-2xl font-black text-gray-900 mb-6">Explore Other {brand} Watches</h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {relatedWatches.map((rw) => (
+                <Link key={rw.slug} href={`/watch/${rw.slug}`} className="bg-white border border-gray-200 rounded-xl p-4 hover:border-indigo-500 hover:shadow-md transition-all group flex flex-col h-full">
+                  <div className="w-10 h-10 bg-indigo-50 rounded-full flex items-center justify-center mb-3 group-hover:bg-indigo-100 transition-colors">
+                    <span className="text-sm">⌚</span>
+                  </div>
+                  <h4 className="text-sm font-bold text-gray-900 line-clamp-2 mb-1 leading-tight flex-grow">{rw.watch_query}</h4>
+                  <p className="text-[10px] text-gray-500 uppercase font-bold tracking-wider mt-2">{rw.power_type}</p>
+                </Link>
+              ))}
+            </div>
+            <div className="mt-6 text-center">
+              <Link href={`/brands/${brand.toLowerCase()}`} className="text-sm font-bold text-indigo-600 hover:text-indigo-800 transition-colors">
+                View all {brand} models &rarr;
+              </Link>
+            </div>
+          </div>
+        )}
+
       </main>
     </div>
   );
