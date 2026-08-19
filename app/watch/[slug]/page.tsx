@@ -1,8 +1,10 @@
 import { createClient } from '@supabase/supabase-js';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { generateStructuredContent, parseWatchDetails } from '../../../lib/watchContentEngine';
 
-export const dynamic = 'force-dynamic';
+// Enable ISR (Incremental Static Regeneration) - Caches page for 24 hours to handle 500k scale safely!
+export const revalidate = 86400;
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
@@ -26,6 +28,24 @@ export default async function WatchPage({ params }: { params: any }) {
     notFound();
   }
 
+  // --- NEW SEO ENGINE LOGIC ---
+  const content = generateStructuredContent(watch);
+  const parsed = parseWatchDetails(watch.watch_query, watch.power_type);
+
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": content.faq.map((item: any) => ({
+      "@type": "Question",
+      "name": item.q,
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": item.a
+      }
+    }))
+  };
+  // -----------------------------
+
   const isAutomatic = watch.power_type === 'automatic' || watch.power_type === 'mechanical';
   const isSmartwatch = watch.power_type === 'smartwatch';
   const isSolar = watch.power_type === 'solar';
@@ -42,20 +62,6 @@ export default async function WatchPage({ params }: { params: any }) {
     : (isSolar ? 'Solar Capacitor' : 'Battery');
 
   const videoId = watch.youtube_video_id || watch['youtube_video_id '] || null;
-
-  const getVideoTitle = () => {
-    const power = (watch.power_type || '').toLowerCase();
-    if (power.includes('mechanical') || power.includes('automatic') || power.includes('hand')) {
-      return `${watch.watch_query} Informational Guide & Review`;
-    } 
-    if (power.includes('solar') || power.includes('eco-drive') || power.includes('eco')) {
-      return `${watch.watch_query} Solar Setup & Maintenance Guide`;
-    } 
-    if (power.includes('smart') || power.includes('digital') || power.includes('connected')) {
-      return `How to Setup and Use Your ${watch.watch_query}`;
-    } 
-    return `Watch Review & Details: ${watch.watch_query}`;
-  };
 
   // Extract brand from query (assuming first word is the brand)
   const brand = watch.watch_query.split(' ')[0];
@@ -87,6 +93,12 @@ export default async function WatchPage({ params }: { params: any }) {
 
       <main className="max-w-4xl mx-auto p-4 py-8 w-full flex-grow relative z-10">
         
+        {/* Invisible Schema Injection for Googlebot */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+
         {/* BREADCRUMBS */}
         <nav className="flex text-[11px] md:text-xs text-gray-500 mb-6 font-medium overflow-x-auto whitespace-nowrap pb-2" aria-label="Breadcrumb">
           <Link href="/" className="hover:text-indigo-600">Home</Link>
@@ -98,13 +110,22 @@ export default async function WatchPage({ params }: { params: any }) {
           <span className="text-gray-900 truncate">{watch.watch_query}</span>
         </nav>
 
+        {/* NEW: Quick Answer for AI Overviews */}
+        <div className="bg-white border-l-4 border-indigo-600 p-5 mb-8 rounded-xl shadow-sm">
+          <h2 className="text-xs font-bold uppercase tracking-wider text-indigo-600 mb-2">Quick Answer</h2>
+          <p className="text-base md:text-lg text-gray-800 leading-relaxed font-medium">{content.quickAnswer}</p>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           
           <div className="order-2 md:order-1 bg-white rounded-2xl shadow-sm border border-gray-200 p-6 flex flex-col h-full">
             {videoId && videoId !== 'NULL' && videoId !== 'NOT_FOUND' ? (
               <div className="flex-grow flex flex-col">
-                <h2 className="text-xl font-bold text-gray-900 mb-4 border-b pb-2">{getVideoTitle()}</h2>
-                <div className="relative w-full aspect-video rounded-xl overflow-hidden shadow-inner bg-gray-100 mb-3 border border-gray-200">
+                {/* NEW: Dynamic How-To Heading & Text */}
+                <h2 className="text-xl font-bold text-gray-900 mb-2 border-b pb-2">{content.headingHowTo}</h2>
+                <p className="text-sm text-gray-600 mb-4 leading-relaxed">{content.sectionHowTo}</p>
+                
+                <div className="relative w-full aspect-video rounded-xl overflow-hidden shadow-inner bg-gray-100 mb-3 border border-gray-200 mt-auto">
                   <iframe
                     src={`https://www.youtube.com/embed/${videoId}`}
                     title={`Video guide for ${watch.watch_query}`}
@@ -112,7 +133,7 @@ export default async function WatchPage({ params }: { params: any }) {
                     allowFullScreen
                   ></iframe>
                 </div>
-                <p className="text-[11px] text-gray-500 leading-tight p-2 bg-gray-50 rounded border border-gray-100 mt-auto">
+                <p className="text-[11px] text-gray-500 leading-tight p-2 bg-gray-50 rounded border border-gray-100 mt-3">
                   <strong className="text-gray-700">Disclaimer:</strong> The video above is for example and general guidelines only. It may not be entirely specific to your exact model, and quality/accuracy depends on third-party availability. If in doubt, please refer to your specific watch handbook or consult a professional.
                 </p>
               </div>
@@ -248,6 +269,46 @@ export default async function WatchPage({ params }: { params: any }) {
               </a>
             )}
             
+          </div>
+        </div>
+
+        {/* NEW: Watch Specifications Table */}
+        <div className="mt-8 bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+          <h2 className="text-xl font-bold text-gray-900 mb-4">Watch Specifications</h2>
+          <div className="overflow-x-auto rounded-xl border border-gray-100">
+            <table className="w-full text-left text-sm">
+              <tbody className="divide-y divide-gray-100">
+                <tr>
+                  <td className="py-3 px-4 font-medium text-gray-500 bg-gray-50/50 w-1/3 md:w-1/4">Brand</td>
+                  <td className="py-3 px-4 font-semibold text-gray-900">{parsed.brand}</td>
+                </tr>
+                <tr>
+                  <td className="py-3 px-4 font-medium text-gray-500 bg-gray-50/50">Model Info</td>
+                  <td className="py-3 px-4 text-gray-900 capitalize">{parsed.size !== 'standard size' ? parsed.size : ''} {parsed.material} • {parsed.dial}</td>
+                </tr>
+                <tr>
+                  <td className="py-3 px-4 font-medium text-gray-500 bg-gray-50/50">Movement / Power</td>
+                  <td className="py-3 px-4 text-gray-900 capitalize">{watch.power_type}</td>
+                </tr>
+                <tr>
+                  <td className="py-3 px-4 font-medium text-gray-500 bg-gray-50/50">Battery Code</td>
+                  <td className="py-3 px-4 font-mono font-bold text-indigo-700">{watch["Model Number"] || 'N/A'}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* NEW: FAQ Section */}
+        <div className="mt-8 bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+          <h2 className="text-xl font-bold text-gray-900 mb-6">Frequently Asked Questions</h2>
+          <div className="space-y-4">
+            {content.faq.map((item: any, idx: number) => (
+              <div key={idx} className="border-b border-gray-100 pb-4 last:border-0 last:pb-0">
+                <h3 className="font-semibold text-base text-gray-900 mb-2">{item.q}</h3>
+                <p className="text-sm text-gray-600 leading-relaxed">{item.a}</p>
+              </div>
+            ))}
           </div>
         </div>
 
