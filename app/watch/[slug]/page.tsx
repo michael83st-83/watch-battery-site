@@ -71,17 +71,15 @@ export default async function WatchPage({ params }: { params: any }) {
 
   return (
     <div className="min-h-screen bg-gray-50 font-sans flex flex-col">
-      <header className="bg-indigo-700 text-white py-8 md:py-12 px-4 shadow-md">
+      {/* PERFORMANCE FIX: Streamlined header with explicit content-visibility for instant mobile paint */}
+      <header className="bg-indigo-700 text-white py-6 px-4 shadow-md w-full [content-visibility:auto]">
         <div className="max-w-4xl mx-auto">
-          <Link href={`/brands/${brand.toLowerCase()}`} prefetch={false} className="inline-block mb-6 text-indigo-200 hover:text-white transition-colors text-sm font-bold tracking-wider">&larr; Back to {brand}</Link>
-          
-          <div className="flex flex-col md:flex-row items-center md:items-start gap-4 md:gap-6 text-center md:text-left">
-            <div className="w-20 h-20 md:w-24 md:h-24 bg-indigo-800 rounded-xl flex items-center justify-center shadow-inner border border-indigo-600 flex-shrink-0">
-               <span className="text-3xl md:text-4xl">⌚</span>
+          <Link href={`/brands/${brand.toLowerCase()}`} prefetch={false} className="inline-block mb-4 text-indigo-200 hover:text-white transition-colors text-xs font-bold tracking-wider">&larr; Back to {brand}</Link>
+          <div className="flex flex-row items-center gap-4">
+            <div className="hidden md:flex w-16 h-16 bg-indigo-800 rounded-xl items-center justify-center shadow-inner border border-indigo-600 flex-shrink-0">
+               <span className="text-3xl">⌚</span>
             </div>
-            <div>
-              <h1 className="text-2xl md:text-5xl font-extrabold tracking-tight mt-2 md:mt-0 leading-tight">{watch.watch_query}</h1>
-            </div>
+            <h1 className="text-2xl md:text-4xl font-extrabold tracking-tight leading-tight">{watch.watch_query}</h1>
           </div>
         </div>
       </header>
@@ -148,7 +146,6 @@ export default async function WatchPage({ params }: { params: any }) {
               {isAutomatic ? (<div><div className="text-3xl md:text-4xl font-black text-gray-900 mb-2 tracking-tight">Mechanical</div><p className="text-sm md:text-base text-gray-600">This watch uses an automatic or hand-wound mechanical movement. It does not require a battery.</p></div>) : isSmartwatch ? (<div><div className="text-3xl md:text-4xl font-black text-indigo-600 mb-2 tracking-tight">Smartwatch</div><p className="text-sm md:text-base text-gray-600">This smartwatch requires a magnetic charging dock or cable.</p></div>) : isSolar ? (<div><div className="text-3xl md:text-4xl font-black text-green-600 mb-2 tracking-tight">{displayModelTitle}</div><p className="text-sm md:text-base text-gray-600">This is a solar-powered watch. It requires a specialized rechargeable capacitor{hasValidPowerModel ? '.' : ', not a standard battery.'}</p></div>) : (<div><div className="text-3xl md:text-4xl font-black text-gray-900 mb-2 tracking-tight">{displayModelTitle}</div><p className="text-sm md:text-base text-gray-600">{hasValidPowerModel ? 'This watch requires a standard battery. Grab a replacement below.' : 'We are verifying the exact battery for this model. Try searching for your specific watch below.'}</p></div>)}
             </div>
             
-            {/* CTA Buttons - Prefetch False Applied */}
             {!isAutomatic && !isSmartwatch && (
               <a href={`https://www.amazon.com/s?k=${encodeURIComponent(amazonSearchTerm)}`} target="_blank" rel="noopener noreferrer" className="bg-orange-500 hover:bg-orange-600 text-white rounded-2xl p-6 shadow-sm transition-transform hover:-translate-y-1 flex items-center justify-between group">
                 <div className="flex items-center gap-4"><div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center font-black text-xs">Power</div><div><div className="text-sm font-bold text-orange-100 mb-1">Buy Replacement {isSolar ? 'Capacitor' : 'Battery'}</div><div className="text-lg md:text-xl font-bold">Amazon: {hasValidPowerModel ? rawModel : 'Search Matches'}</div></div></div>
