@@ -1,0 +1,36 @@
+{
+  "timestamp": "2025-10-06T12:29:19.312027",
+  "dataset_info": {
+    "rows": 1670,
+    "columns": 42,
+    "memory_mb": 3.3565149307250977
+  },
+  "data_quality": {
+    "completeness_percent": 96.7094382663245,
+    "missing_values": 2308,
+    "duplicates": 0
+  },
+  "key_metrics": {
+    "unique_products": 581,
+    "unique_brands": 22,
+    "unique_collections": 77,
+    "price_range": {
+      "min": 13800.0,
+      "max": 7321600.0,
+      "mean": 350040.89221556886,
+      "median": 174200.0
+    }
+  },
+  "kaggle_score": {
+    "total": 95,
+    "breakdown": {
+      "size": 20,
+      "completeness": 25,
+      "features": 20,
+      "quality": 15,
+      "ml_ready": 15
+    },
+    "grade": "MÜKEMMEL",
+    "recommendation": "Premium Kaggle veri seti için hazır!"
+  }
+}

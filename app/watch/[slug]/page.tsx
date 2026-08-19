@@ -3,7 +3,6 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { generateStructuredContent, parseWatchDetails } from '../../../lib/watchContentEngine';
 
-// Enable ISR (Incremental Static Regeneration)
 export const revalidate = 86400;
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
@@ -11,7 +10,6 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 export default async function WatchPage({ params }: { params: any }) {
-  
   const resolvedParams = await params;
   const actualSlug = resolvedParams?.slug || resolvedParams?.id;
 
@@ -44,9 +42,10 @@ export default async function WatchPage({ params }: { params: any }) {
     }))
   };
 
-  const isAutomatic = watch.power_type === 'automatic' || watch.power_type === 'mechanical';
-  const isSmartwatch = watch.power_type === 'smartwatch';
-  const isSolar = watch.power_type === 'solar';
+  const isAutomatic = parsed.type === 'automatic';
+  const isSmartwatch = parsed.type === 'smartwatch';
+  const isHybrid = parsed.type === 'hybrid_smartwatch';
+  const isSolar = parsed.type === 'solar';
   const rawModel = watch['Model Number'];
   
   const hasValidPowerModel = rawModel && rawModel !== 'N/A' && rawModel !== 'NULL' && rawModel.trim() !== '';
@@ -60,7 +59,10 @@ export default async function WatchPage({ params }: { params: any }) {
     : (isSolar ? 'Solar Capacitor' : 'Battery');
 
   const videoId = watch.youtube_video_id || watch['youtube_video_id '] || null;
-  const brand = watch.watch_query.split(' ')[0];
+  
+  // FIX: Multi-word Brand Mapping (e.g., "Grand Seiko" instead of just "Grand")
+  const brand = parsed.brand;
+  const brandSlug = brand.toLowerCase().replace(/\s+/g, '-');
   
   const { data: relatedWatches } = await supabase
     .from('Watch Batteries')
@@ -71,10 +73,9 @@ export default async function WatchPage({ params }: { params: any }) {
 
   return (
     <div className="min-h-screen bg-gray-50 font-sans flex flex-col">
-      {/* PERFORMANCE FIX: Streamlined header with explicit content-visibility for instant mobile paint */}
       <header className="bg-indigo-700 text-white py-6 px-4 shadow-md w-full [content-visibility:auto]">
         <div className="max-w-4xl mx-auto">
-          <Link href={`/brands/${brand.toLowerCase()}`} prefetch={false} className="inline-block mb-4 text-indigo-200 hover:text-white transition-colors text-xs font-bold tracking-wider">&larr; Back to {brand}</Link>
+          <Link href={`/brands/${brandSlug}`} prefetch={false} className="inline-block mb-4 text-indigo-200 hover:text-white transition-colors text-xs font-bold tracking-wider">&larr; Back to {brand}</Link>
           <div className="flex flex-row items-center gap-4">
             <div className="hidden md:flex w-16 h-16 bg-indigo-800 rounded-xl items-center justify-center shadow-inner border border-indigo-600 flex-shrink-0">
                <span className="text-3xl">⌚</span>
@@ -85,7 +86,6 @@ export default async function WatchPage({ params }: { params: any }) {
       </header>
 
       <main className="max-w-4xl mx-auto p-4 py-8 w-full flex-grow relative z-10">
-        
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -96,7 +96,7 @@ export default async function WatchPage({ params }: { params: any }) {
           <span className="mx-2">›</span>
           <Link href="/brands" prefetch={false} className="hover:text-indigo-600">Brands</Link>
           <span className="mx-2">›</span>
-          <Link href={`/brands/${brand.toLowerCase()}`} prefetch={false} className="hover:text-indigo-600">{brand}</Link>
+          <Link href={`/brands/${brandSlug}`} prefetch={false} className="hover:text-indigo-600">{brand}</Link>
           <span className="mx-2">›</span>
           <span className="text-gray-900 truncate">{watch.watch_query}</span>
         </nav>
@@ -112,15 +112,8 @@ export default async function WatchPage({ params }: { params: any }) {
               <div className="flex-grow flex flex-col">
                 <h2 className="text-xl font-bold text-gray-900 mb-2 border-b pb-2">{content.headingHowTo}</h2>
                 <p className="text-sm text-gray-600 mb-4 leading-relaxed">{content.sectionHowTo}</p>
-                
                 <div className="relative w-full aspect-video rounded-xl overflow-hidden shadow-inner bg-gray-100 mb-3 border border-gray-200 mt-auto">
-                  <iframe
-                    src={`https://www.youtube.com/embed/${videoId}`}
-                    title={`Video guide for ${watch.watch_query}`}
-                    className="absolute top-0 left-0 w-full h-full"
-                    allowFullScreen
-                    loading="lazy"
-                  ></iframe>
+                  <iframe src={`https://www.youtube.com/embed/${videoId}`} title={`Video guide for ${watch.watch_query}`} className="absolute top-0 left-0 w-full h-full" allowFullScreen loading="lazy"></iframe>
                 </div>
                 <p className="text-[11px] text-gray-500 leading-tight p-2 bg-gray-50 rounded border border-gray-100 mt-3">
                   <strong className="text-gray-700">Disclaimer:</strong> The video above is for example and general guidelines only. It may not be entirely specific to your exact model, and quality/accuracy depends on third-party availability. If in doubt, please refer to your specific watch handbook or consult a professional.
@@ -146,14 +139,16 @@ export default async function WatchPage({ params }: { params: any }) {
               {isAutomatic ? (<div><div className="text-3xl md:text-4xl font-black text-gray-900 mb-2 tracking-tight">Mechanical</div><p className="text-sm md:text-base text-gray-600">This watch uses an automatic or hand-wound mechanical movement. It does not require a battery.</p></div>) : isSmartwatch ? (<div><div className="text-3xl md:text-4xl font-black text-indigo-600 mb-2 tracking-tight">Smartwatch</div><p className="text-sm md:text-base text-gray-600">This smartwatch requires a magnetic charging dock or cable.</p></div>) : isSolar ? (<div><div className="text-3xl md:text-4xl font-black text-green-600 mb-2 tracking-tight">{displayModelTitle}</div><p className="text-sm md:text-base text-gray-600">This is a solar-powered watch. It requires a specialized rechargeable capacitor{hasValidPowerModel ? '.' : ', not a standard battery.'}</p></div>) : (<div><div className="text-3xl md:text-4xl font-black text-gray-900 mb-2 tracking-tight">{displayModelTitle}</div><p className="text-sm md:text-base text-gray-600">{hasValidPowerModel ? 'This watch requires a standard battery. Grab a replacement below.' : 'We are verifying the exact battery for this model. Try searching for your specific watch below.'}</p></div>)}
             </div>
             
-            {!isAutomatic && !isSmartwatch && (
-              <a href={`https://www.amazon.com/s?k=${encodeURIComponent(amazonSearchTerm)}`} target="_blank" rel="noopener noreferrer" className="bg-orange-500 hover:bg-orange-600 text-white rounded-2xl p-6 shadow-sm transition-transform hover:-translate-y-1 flex items-center justify-between group">
-                <div className="flex items-center gap-4"><div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center font-black text-xs">Power</div><div><div className="text-sm font-bold text-orange-100 mb-1">Buy Replacement {isSolar ? 'Capacitor' : 'Battery'}</div><div className="text-lg md:text-xl font-bold">Amazon: {hasValidPowerModel ? rawModel : 'Search Matches'}</div></div></div>
+            {/* FIX: Dynamic Primary Button for Smartwatches */}
+            {!isAutomatic && (
+              <a href={isSmartwatch ? `https://www.amazon.com/s?k=${encodeURIComponent(`${brand} smartwatch charger cable`)}` : `https://www.amazon.com/s?k=${encodeURIComponent(amazonSearchTerm)}`} target="_blank" rel="noopener noreferrer" className="bg-orange-500 hover:bg-orange-600 text-white rounded-2xl p-6 shadow-sm transition-transform hover:-translate-y-1 flex items-center justify-between group">
+                <div className="flex items-center gap-4"><div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center font-black text-xs">Power</div><div><div className="text-sm font-bold text-orange-100 mb-1">{isSmartwatch ? 'Buy Charging Cable' : `Buy Replacement ${isSolar ? 'Capacitor' : 'Battery'}`}</div><div className="text-lg md:text-xl font-bold">Amazon: {isSmartwatch ? 'Charging Docks' : hasValidPowerModel ? rawModel : 'Search Matches'}</div></div></div>
               </a>
             )}
             
-            <a href={isAutomatic ? "https://www.amazon.com/s?k=automatic+watch+winder" : "https://www.amazon.com/s?k=watch+repair+kit"} target="_blank" rel="noopener noreferrer" className="bg-gray-900 hover:bg-black text-white rounded-2xl p-6 shadow-sm transition-transform hover:-translate-y-1 flex items-center justify-between group">
-              <div className="flex items-center gap-4"><div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center font-black text-[10px] text-center leading-tight">{isAutomatic ? 'Winder' : 'Tool Kit'}</div><div><div className="text-sm font-bold text-gray-400 mb-1">Buy Recommended Accessory</div><div className="text-lg md:text-xl font-bold">Amazon: {isAutomatic ? 'Watch Winder' : 'Repair Kit'}</div></div></div>
+            {/* FIX: Dynamic Secondary Accessory Button */}
+            <a href={isAutomatic ? "https://www.amazon.com/s?k=automatic+watch+winder" : isSmartwatch ? "https://www.amazon.com/s?k=smartwatch+screen+protector" : "https://www.amazon.com/s?k=watch+repair+kit"} target="_blank" rel="noopener noreferrer" className="bg-gray-900 hover:bg-black text-white rounded-2xl p-6 shadow-sm transition-transform hover:-translate-y-1 flex items-center justify-between group">
+              <div className="flex items-center gap-4"><div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center font-black text-[10px] text-center leading-tight">{isAutomatic ? 'Winder' : isSmartwatch ? 'Shield' : 'Tool Kit'}</div><div><div className="text-sm font-bold text-gray-400 mb-1">Buy Recommended Accessory</div><div className="text-lg md:text-xl font-bold">Amazon: {isAutomatic ? 'Watch Winder' : isSmartwatch ? 'Screen Protector' : 'Repair Kit'}</div></div></div>
             </a>
           </div>
         </div>
@@ -165,7 +160,7 @@ export default async function WatchPage({ params }: { params: any }) {
               <tbody className="divide-y divide-gray-100">
                 <tr><td className="py-3 px-4 font-medium text-gray-500 bg-gray-50/50 w-1/3 md:w-1/4">Brand</td><td className="py-3 px-4 font-semibold text-gray-900">{parsed.brand}</td></tr>
                 <tr><td className="py-3 px-4 font-medium text-gray-500 bg-gray-50/50">Model Info</td><td className="py-3 px-4 text-gray-900 capitalize">{parsed.size !== 'standard size' ? parsed.size : ''} {parsed.material} • {parsed.dial}</td></tr>
-                <tr><td className="py-3 px-4 font-medium text-gray-500 bg-gray-50/50">Movement / Power</td><td className="py-3 px-4 text-gray-900 capitalize">{watch.power_type}</td></tr>
+                <tr><td className="py-3 px-4 font-medium text-gray-500 bg-gray-50/50">Movement / Power</td><td className="py-3 px-4 text-gray-900 capitalize">{parsed.type === 'hybrid_smartwatch' ? 'Hybrid Smartwatch' : watch.power_type}</td></tr>
                 <tr><td className="py-3 px-4 font-medium text-gray-500 bg-gray-50/50">Battery Code</td><td className="py-3 px-4 font-mono font-bold text-indigo-700">{watch["Model Number"] || 'N/A'}</td></tr>
               </tbody>
             </table>
@@ -197,7 +192,8 @@ export default async function WatchPage({ params }: { params: any }) {
               ))}
             </div>
             <div className="mt-6 text-center">
-              <Link href={`/brands/${brand.toLowerCase()}`} prefetch={false} className="text-sm font-bold text-indigo-600 hover:text-indigo-800 transition-colors">
+              {/* FIX: Fixed spacing & integrated parsed brand */}
+              <Link href={`/brands/${brandSlug}`} prefetch={false} className="text-sm font-bold text-indigo-600 hover:text-indigo-800 transition-colors">
                 View all {brand} models &rarr;
               </Link>
             </div>

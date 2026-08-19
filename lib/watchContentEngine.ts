@@ -14,13 +14,13 @@ export interface ParsedWatch {
   material: string;
   dial: string;
   ref: string;
-  type: 'quartz' | 'solar' | 'automatic' | 'smartwatch';
+  type: 'quartz' | 'solar' | 'automatic' | 'smartwatch' | 'hybrid_smartwatch';
 }
 
 export function parseWatchDetails(query: string, powerType: string): ParsedWatch {
   const q = query.trim();
   
-  const brands = ['Rolex', 'Omega', 'Breitling', 'Longines', 'Cartier', 'Tissot', 'Fossil', 'Diesel', 'Nixon', 'Maserati', 'TIMEX', 'Certina', 'Hamilton', 'IWC', 'Bremont', 'Mido', 'Eterna', 'Seiko', 'Citizen', 'Casio'];
+  const brands = ['Grand Seiko', 'Tag Heuer', 'Frederique Constant', 'Rolex', 'Omega', 'Breitling', 'Longines', 'Cartier', 'Tissot', 'Fossil', 'Diesel', 'Nixon', 'Maserati', 'TIMEX', 'Certina', 'Hamilton', 'IWC', 'Bremont', 'Mido', 'Eterna', 'Seiko', 'Citizen', 'Casio'];
   const brand = brands.find(b => new RegExp(`\\b${b}\\b`, 'i').test(q)) || q.split(' ')[0] || 'Watch';
 
   const sizeMatch = q.match(/\b(2[0-9]|3[0-9]|4[0-9]|5[0-9])\s*(mm)?\b/i);
@@ -35,10 +35,13 @@ export function parseWatchDetails(query: string, powerType: string): ParsedWatch
   const refMatch = q.match(/\b([A-Z]{0,3}\d{3,7}[A-Z0-9.\-\/]*)\b/i);
   const ref = refMatch ? refMatch[1] : '';
 
-  let type: 'quartz' | 'solar' | 'automatic' | 'smartwatch' = 'quartz';
+  let type: 'quartz' | 'solar' | 'automatic' | 'smartwatch' | 'hybrid_smartwatch' = 'quartz';
   const pt = powerType.toLowerCase();
   
-  if (pt.includes('solar') || q.toLowerCase().includes('solar') || q.toLowerCase().includes('eco-drive')) {
+  // Detect Hybrids FIRST
+  if (pt.includes('hybrid') || q.toLowerCase().includes('hybrid') || (q.toLowerCase().includes('smartwatch') && (q.toLowerCase().includes('frederique constant') || q.toLowerCase().includes('withings')))) {
+    type = 'hybrid_smartwatch';
+  } else if (pt.includes('solar') || q.toLowerCase().includes('solar') || q.toLowerCase().includes('eco-drive')) {
     type = 'solar';
   } else if (pt.includes('automatic') || pt.includes('mechanical')) {
     type = 'automatic';
@@ -56,7 +59,19 @@ export function generateStructuredContent(watch: WatchRecord) {
   const hasValidBattery = rawBattery && rawBattery !== 'N/A' && rawBattery !== 'NULL' && rawBattery.trim() !== '';
   const battery = hasValidBattery ? rawBattery : (p.type === 'solar' ? 'rechargeable capacitor' : 'standard watch battery');
 
-  if (p.type === 'solar') {
+  if (p.type === 'hybrid_smartwatch') {
+    return {
+      quickAnswer: `The ${watch.watch_query} is a hybrid smartwatch. Unlike standard touchscreen smartwatches that require daily magnetic charging, it operates on a standard ${hasValidBattery ? battery : 'button cell'} battery that powers both the analog hands and Bluetooth tracking features.`,
+      headingHowTo: `Replacing the Battery in your ${watch.watch_query}`,
+      sectionHowTo: `Replacing the battery in your ${p.brand} hybrid smartwatch requires carefully inspecting the case back. Using an appropriate watchmaker case wrench prevents slipping and scratching the ${p.material} finish. Avoid touching the new ${hasValidBattery ? battery : 'replacement'} surfaces directly with your fingers, as skin oils can reduce conductivity and affect the Bluetooth module.`,
+      headingTools: `Essential Tools for ${p.brand} Battery Replacement`,
+      sectionTools: `To safely change the battery at home, you will need:\n- A precision watch case opener tool.\n- Non-conductive plastic or anti-magnetic brass tweezers.\n- A fresh, genuine ${hasValidBattery ? battery : 'replacement'} cell.`,
+      faq: [
+        { q: `Does the ${watch.watch_query} need a charger?`, a: `No. As a hybrid smartwatch, it does not use a magnetic charging cable. It runs on a standard replaceable watch battery.` },
+        { q: `How long does the battery last?`, a: `Depending on how frequently it syncs to your phone, a fresh battery in this hybrid model typically lasts between 12 to 24 months.` }
+      ]
+    };
+  } else if (p.type === 'solar') {
     return {
       quickAnswer: `The ${watch.watch_query} is a solar-powered timepiece. Instead of a standard disposable battery, it utilizes a ${battery} to store energy converted from natural and artificial light.`,
       headingHowTo: `Capacitor Details for ${watch.watch_query}`,
@@ -94,7 +109,6 @@ export function generateStructuredContent(watch: WatchRecord) {
       ]
     };
   } else {
-    // Default Quartz
     return {
       quickAnswer: `The ${watch.watch_query} is a quartz timepiece powered by a ${hasValidBattery ? battery : 'standard button cell'} battery. Under normal operational conditions, this cell provides approximately 2 to 3 years of continuous power before needing replacement.`,
       headingHowTo: `How to Replace the Battery in a ${watch.watch_query}`,

@@ -1,0 +1,153 @@
+{
+  "title": "Sami Saatler - Premium Watch Dataset (Optimized)",
+  "subtitle": "Comprehensive Turkish luxury watch market data with 1,670 products and 42 optimized features",
+  "description": "This premium dataset contains detailed information about 1,670 luxury watches from 22 prestigious brands, scraped from SamiWatches - one of Turkey's leading luxury watch retailers. The dataset has been professionally cleaned, optimized, and enhanced with advanced analytics features including improved price categorization, brand prestige levels, and technical specifications. Perfect for machine learning projects, market analysis, and luxury goods research.\n\nKey improvements in this optimized version:\n- Enhanced data completeness (96.71%)\n- Optimized memory usage (3.23 MB)\n- Improved price categorization (5 balanced categories)\n- Added brand prestige analysis\n- Standardized categorical data\n- New technical features (case diameter analysis)\n- Zero duplicate records",
+  "version": "1.0",
+  "created_date": "2024-10-06",
+  "last_updated": "2024-10-06",
+  "license": "CC BY-SA 4.0",
+  "language": "English",
+  "tags": [
+    "luxury-watches",
+    "turkish-market",
+    "ecommerce",
+    "pricing-analysis",
+    "brand-analysis",
+    "machine-learning",
+    "retail-data",
+    "premium-goods",
+    "market-research",
+    "optimized-dataset"
+  ],
+  "categories": [
+    "Business",
+    "Retail and Shopping",
+    "Fashion and Beauty"
+  ],
+  "data_source": {
+    "website": "SamiWatches.com",
+    "collection_method": "Web Scraping",
+    "collection_date": "October 2024",
+    "geographic_scope": "Turkey",
+    "industry": "Luxury Watch Retail"
+  },
+  "dataset_stats": {
+    "total_records": 1670,
+    "total_features": 38,
+    "data_completeness": 94.7,
+    "unique_brands": 23,
+    "unique_collections": 101,
+    "price_range": {
+      "min_tl": 13800,
+      "max_tl": 7321600,
+      "mean_tl": 350041,
+      "currency": "Turkish Lira"
+    },
+    "file_size_mb": "~1.2",
+    "format": "CSV"
+  },
+  "feature_categories": {
+    "identification": [
+      "name",
+      "MARKA",
+      "KOLEKSIYON",
+      "REFERANS"
+    ],
+    "pricing": [
+      "price",
+      "price_category",
+      "price_percentile",
+      "price_vs_brand_avg",
+      "is_price_outlier"
+    ],
+    "technical_specs": [
+      "MEKANIZMA",
+      "KASA MATERYALI",
+      "KASA ÇAPI",
+      "SU REZISTANSI",
+      "GÜÇ REZERVI",
+      "KAYIŞ"
+    ],
+    "demographics": [
+      "CINSIYET",
+      "GARANTI SÜRESI"
+    ],
+    "enhanced_features": [
+      "brand_country",
+      "brand_age",
+      "brand_founded_year",
+      "case_material_category",
+      "water_resistance_category",
+      "collection_price_tier",
+      "brand_prestige"
+    ]
+  },
+  "use_cases": [
+    "Price prediction modeling",
+    "Market analysis and trends",
+    "Brand positioning studies",
+    "Consumer preference analysis",
+    "Recommendation systems",
+    "Business intelligence",
+    "Academic research",
+    "Data science education"
+  ],
+  "data_quality": {
+    "missing_data_handling": "Professional cleaning applied",
+    "duplicate_removal": "Complete - 0 duplicates",
+    "outlier_detection": "3.4% price outliers identified",
+    "standardization": "Categories and formats standardized",
+    "validation": "Multi-step quality assurance"
+  },
+  "technical_requirements": {
+    "recommended_tools": [
+      "Python (pandas, numpy, scikit-learn)",
+      "R (tidyverse, ggplot2)",
+      "Excel/Google Sheets",
+      "Tableau/Power BI"
+    ],
+    "file_encoding": "UTF-8",
+    "separator": "comma",
+    "decimal_separator": "dot"
+  },
+  "ethical_considerations": {
+    "data_source": "Publicly available product information",
+    "privacy": "No personal information included",
+    "commercial_use": "Verify with original source terms",
+    "attribution": "Please cite dataset and methodology"
+  },
+  "sample_insights": {
+    "top_brands_by_avg_price": [
+      "Bovet",
+      "Patek Philippe", 
+      "Audemars Piguet",
+      "Vacheron Constantin",
+      "Richard Mille"
+    ],
+    "most_common_materials": [
+      "Steel (52.5%)",
+      "Gold (12.9%)",
+      "Titanium (6.2%)"
+    ],
+    "price_distribution": {
+      "Budget": "27.4%",
+      "Mid-Range": "38.1%", 
+      "Luxury": "16.2%",
+      "Ultra-Luxury": "18.3%"
+    }
+  },
+  "future_updates": {
+    "planned_enhancements": [
+      "Additional product images",
+      "Historical price tracking",
+      "Customer review sentiment",
+      "Seasonal availability data"
+    ],
+    "update_frequency": "Quarterly (planned)"
+  },
+  "contact": {
+    "purpose": "Educational and research use",
+    "collaboration": "Open to academic partnerships",
+    "feedback": "Welcome improvements and suggestions"
+  }
+}
