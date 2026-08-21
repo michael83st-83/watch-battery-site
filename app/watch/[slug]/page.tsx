@@ -60,7 +60,6 @@ export default async function WatchPage({ params }: { params: any }) {
 
   const videoId = watch.youtube_video_id || watch['youtube_video_id '] || null;
   
-  // FIX: Multi-word Brand Mapping (e.g., "Grand Seiko" instead of just "Grand")
   const brand = parsed.brand;
   const brandSlug = brand.toLowerCase().replace(/\s+/g, '-');
   
@@ -139,14 +138,12 @@ export default async function WatchPage({ params }: { params: any }) {
               {isAutomatic ? (<div><div className="text-3xl md:text-4xl font-black text-gray-900 mb-2 tracking-tight">Mechanical</div><p className="text-sm md:text-base text-gray-600">This watch uses an automatic or hand-wound mechanical movement. It does not require a battery.</p></div>) : isSmartwatch ? (<div><div className="text-3xl md:text-4xl font-black text-indigo-600 mb-2 tracking-tight">Smartwatch</div><p className="text-sm md:text-base text-gray-600">This smartwatch requires a magnetic charging dock or cable.</p></div>) : isSolar ? (<div><div className="text-3xl md:text-4xl font-black text-green-600 mb-2 tracking-tight">{displayModelTitle}</div><p className="text-sm md:text-base text-gray-600">This is a solar-powered watch. It requires a specialized rechargeable capacitor{hasValidPowerModel ? '.' : ', not a standard battery.'}</p></div>) : (<div><div className="text-3xl md:text-4xl font-black text-gray-900 mb-2 tracking-tight">{displayModelTitle}</div><p className="text-sm md:text-base text-gray-600">{hasValidPowerModel ? 'This watch requires a standard battery. Grab a replacement below.' : 'We are verifying the exact battery for this model. Try searching for your specific watch below.'}</p></div>)}
             </div>
             
-            {/* FIX: Dynamic Primary Button for Smartwatches */}
             {!isAutomatic && (
               <a href={isSmartwatch ? `https://www.amazon.com/s?k=${encodeURIComponent(`${brand} smartwatch charger cable`)}` : `https://www.amazon.com/s?k=${encodeURIComponent(amazonSearchTerm)}`} target="_blank" rel="noopener noreferrer" className="bg-orange-500 hover:bg-orange-600 text-white rounded-2xl p-6 shadow-sm transition-transform hover:-translate-y-1 flex items-center justify-between group">
                 <div className="flex items-center gap-4"><div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center font-black text-xs">Power</div><div><div className="text-sm font-bold text-orange-100 mb-1">{isSmartwatch ? 'Buy Charging Cable' : `Buy Replacement ${isSolar ? 'Capacitor' : 'Battery'}`}</div><div className="text-lg md:text-xl font-bold">Amazon: {isSmartwatch ? 'Charging Docks' : hasValidPowerModel ? rawModel : 'Search Matches'}</div></div></div>
               </a>
             )}
             
-            {/* FIX: Dynamic Secondary Accessory Button */}
             <a href={isAutomatic ? "https://www.amazon.com/s?k=automatic+watch+winder" : isSmartwatch ? "https://www.amazon.com/s?k=smartwatch+screen+protector" : "https://www.amazon.com/s?k=watch+repair+kit"} target="_blank" rel="noopener noreferrer" className="bg-gray-900 hover:bg-black text-white rounded-2xl p-6 shadow-sm transition-transform hover:-translate-y-1 flex items-center justify-between group">
               <div className="flex items-center gap-4"><div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center font-black text-[10px] text-center leading-tight">{isAutomatic ? 'Winder' : isSmartwatch ? 'Shield' : 'Tool Kit'}</div><div><div className="text-sm font-bold text-gray-400 mb-1">Buy Recommended Accessory</div><div className="text-lg md:text-xl font-bold">Amazon: {isAutomatic ? 'Watch Winder' : isSmartwatch ? 'Screen Protector' : 'Repair Kit'}</div></div></div>
             </a>
@@ -192,9 +189,8 @@ export default async function WatchPage({ params }: { params: any }) {
               ))}
             </div>
             <div className="mt-6 text-center">
-              {/* FIX: Fixed spacing & integrated parsed brand */}
               <Link href={`/brands/${brandSlug}`} prefetch={false} className="text-sm font-bold text-indigo-600 hover:text-indigo-800 transition-colors">
-                View all {brand} models &rarr;
+                View all {brand}{' '}models &rarr;
               </Link>
             </div>
           </div>
