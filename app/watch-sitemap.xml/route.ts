@@ -8,7 +8,7 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-const CHUNK_SIZE = 25000;
+const CHUNK_SIZE = 1000;
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
@@ -30,7 +30,6 @@ export async function GET(request: Request) {
 
     for (let i = 0; i < sitemapCount; i++) {
       xml += `  <sitemap>\n`;
-      // Updated to point to the new custom route name
       xml += `    <loc>${baseUrl}/watch-sitemap.xml?id=${i}</loc>\n`;
       xml += `  </sitemap>\n`;
     }
